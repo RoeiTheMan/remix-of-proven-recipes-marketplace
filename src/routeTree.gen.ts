@@ -9,38 +9,289 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RequestsRouteImport } from './routes/requests'
+import { Route as PurchasesRouteImport } from './routes/purchases'
+import { Route as CreatorRouteImport } from './routes/creator'
+import { Route as BrowseRouteImport } from './routes/browse'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdvisorRouteImport } from './routes/advisor'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as RequestsNewRouteImport } from './routes/requests.new'
+import { Route as RequestsIdRouteImport } from './routes/requests.$id'
+import { Route as PurchasesIdRouteImport } from './routes/purchases.$id'
+import { Route as ListingIdRouteImport } from './routes/listing.$id'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminLogsRouteImport } from './routes/admin.logs'
+import { Route as AdminListingsRouteImport } from './routes/admin.listings'
+import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
 
+const RequestsRoute = RequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PurchasesRoute = PurchasesRouteImport.update({
+  id: '/purchases',
+  path: '/purchases',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreatorRoute = CreatorRouteImport.update({
+  id: '/creator',
+  path: '/creator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BrowseRoute = BrowseRouteImport.update({
+  id: '/browse',
+  path: '/browse',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdvisorRoute = AdvisorRouteImport.update({
+  id: '/advisor',
+  path: '/advisor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const RequestsNewRoute = RequestsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => RequestsRoute,
+} as any)
+const RequestsIdRoute = RequestsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => RequestsRoute,
+} as any)
+const PurchasesIdRoute = PurchasesIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PurchasesRoute,
+} as any)
+const ListingIdRoute = ListingIdRouteImport.update({
+  id: '/listing/$id',
+  path: '/listing/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminLogsRoute = AdminLogsRouteImport.update({
+  id: '/logs',
+  path: '/logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminListingsRoute = AdminListingsRouteImport.update({
+  id: '/listings',
+  path: '/listings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCreatorsRoute = AdminCreatorsRouteImport.update({
+  id: '/creators',
+  path: '/creators',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/advisor': typeof AdvisorRoute
+  '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
+  '/creator': typeof CreatorRoute
+  '/purchases': typeof PurchasesRouteWithChildren
+  '/requests': typeof RequestsRouteWithChildren
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/listings': typeof AdminListingsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/listing/$id': typeof ListingIdRoute
+  '/purchases/$id': typeof PurchasesIdRoute
+  '/requests/$id': typeof RequestsIdRoute
+  '/requests/new': typeof RequestsNewRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/advisor': typeof AdvisorRoute
+  '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
+  '/creator': typeof CreatorRoute
+  '/purchases': typeof PurchasesRouteWithChildren
+  '/requests': typeof RequestsRouteWithChildren
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/listings': typeof AdminListingsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/listing/$id': typeof ListingIdRoute
+  '/purchases/$id': typeof PurchasesIdRoute
+  '/requests/$id': typeof RequestsIdRoute
+  '/requests/new': typeof RequestsNewRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/advisor': typeof AdvisorRoute
+  '/auth': typeof AuthRoute
+  '/browse': typeof BrowseRoute
+  '/creator': typeof CreatorRoute
+  '/purchases': typeof PurchasesRouteWithChildren
+  '/requests': typeof RequestsRouteWithChildren
+  '/admin/creators': typeof AdminCreatorsRoute
+  '/admin/listings': typeof AdminListingsRoute
+  '/admin/logs': typeof AdminLogsRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/listing/$id': typeof ListingIdRoute
+  '/purchases/$id': typeof PurchasesIdRoute
+  '/requests/$id': typeof RequestsIdRoute
+  '/requests/new': typeof RequestsNewRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/advisor'
+    | '/auth'
+    | '/browse'
+    | '/creator'
+    | '/purchases'
+    | '/requests'
+    | '/admin/creators'
+    | '/admin/listings'
+    | '/admin/logs'
+    | '/admin/reports'
+    | '/listing/$id'
+    | '/purchases/$id'
+    | '/requests/$id'
+    | '/requests/new'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/advisor'
+    | '/auth'
+    | '/browse'
+    | '/creator'
+    | '/purchases'
+    | '/requests'
+    | '/admin/creators'
+    | '/admin/listings'
+    | '/admin/logs'
+    | '/admin/reports'
+    | '/listing/$id'
+    | '/purchases/$id'
+    | '/requests/$id'
+    | '/requests/new'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/advisor'
+    | '/auth'
+    | '/browse'
+    | '/creator'
+    | '/purchases'
+    | '/requests'
+    | '/admin/creators'
+    | '/admin/listings'
+    | '/admin/logs'
+    | '/admin/reports'
+    | '/listing/$id'
+    | '/purchases/$id'
+    | '/requests/$id'
+    | '/requests/new'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  AdvisorRoute: typeof AdvisorRoute
+  AuthRoute: typeof AuthRoute
+  BrowseRoute: typeof BrowseRoute
+  CreatorRoute: typeof CreatorRoute
+  PurchasesRoute: typeof PurchasesRouteWithChildren
+  RequestsRoute: typeof RequestsRouteWithChildren
+  ListingIdRoute: typeof ListingIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/requests': {
+      id: '/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof RequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/purchases': {
+      id: '/purchases'
+      path: '/purchases'
+      fullPath: '/purchases'
+      preLoaderRoute: typeof PurchasesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creator': {
+      id: '/creator'
+      path: '/creator'
+      fullPath: '/creator'
+      preLoaderRoute: typeof CreatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/browse': {
+      id: '/browse'
+      path: '/browse'
+      fullPath: '/browse'
+      preLoaderRoute: typeof BrowseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/advisor': {
+      id: '/advisor'
+      path: '/advisor'
+      fullPath: '/advisor'
+      preLoaderRoute: typeof AdvisorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +299,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/requests/new': {
+      id: '/requests/new'
+      path: '/new'
+      fullPath: '/requests/new'
+      preLoaderRoute: typeof RequestsNewRouteImport
+      parentRoute: typeof RequestsRoute
+    }
+    '/requests/$id': {
+      id: '/requests/$id'
+      path: '/$id'
+      fullPath: '/requests/$id'
+      preLoaderRoute: typeof RequestsIdRouteImport
+      parentRoute: typeof RequestsRoute
+    }
+    '/purchases/$id': {
+      id: '/purchases/$id'
+      path: '/$id'
+      fullPath: '/purchases/$id'
+      preLoaderRoute: typeof PurchasesIdRouteImport
+      parentRoute: typeof PurchasesRoute
+    }
+    '/listing/$id': {
+      id: '/listing/$id'
+      path: '/listing/$id'
+      fullPath: '/listing/$id'
+      preLoaderRoute: typeof ListingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/logs': {
+      id: '/admin/logs'
+      path: '/logs'
+      fullPath: '/admin/logs'
+      preLoaderRoute: typeof AdminLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/listings': {
+      id: '/admin/listings'
+      path: '/listings'
+      fullPath: '/admin/listings'
+      preLoaderRoute: typeof AdminListingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/creators': {
+      id: '/admin/creators'
+      path: '/creators'
+      fullPath: '/admin/creators'
+      preLoaderRoute: typeof AdminCreatorsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminCreatorsRoute: typeof AdminCreatorsRoute
+  AdminListingsRoute: typeof AdminListingsRoute
+  AdminLogsRoute: typeof AdminLogsRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminCreatorsRoute: AdminCreatorsRoute,
+  AdminListingsRoute: AdminListingsRoute,
+  AdminLogsRoute: AdminLogsRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
+interface PurchasesRouteChildren {
+  PurchasesIdRoute: typeof PurchasesIdRoute
+}
+
+const PurchasesRouteChildren: PurchasesRouteChildren = {
+  PurchasesIdRoute: PurchasesIdRoute,
+}
+
+const PurchasesRouteWithChildren = PurchasesRoute._addFileChildren(
+  PurchasesRouteChildren,
+)
+
+interface RequestsRouteChildren {
+  RequestsIdRoute: typeof RequestsIdRoute
+  RequestsNewRoute: typeof RequestsNewRoute
+}
+
+const RequestsRouteChildren: RequestsRouteChildren = {
+  RequestsIdRoute: RequestsIdRoute,
+  RequestsNewRoute: RequestsNewRoute,
+}
+
+const RequestsRouteWithChildren = RequestsRoute._addFileChildren(
+  RequestsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  AdvisorRoute: AdvisorRoute,
+  AuthRoute: AuthRoute,
+  BrowseRoute: BrowseRoute,
+  CreatorRoute: CreatorRoute,
+  PurchasesRoute: PurchasesRouteWithChildren,
+  RequestsRoute: RequestsRouteWithChildren,
+  ListingIdRoute: ListingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

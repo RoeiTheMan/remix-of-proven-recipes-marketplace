@@ -25,7 +25,8 @@ function AdminLayout() {
         <span className="label-eyebrow">Admin</span>
         <nav className="mt-3 flex flex-col gap-1 border-l border-border">
           {NAV.map((n) => {
-            const active = n.exact ? path === n.to : path.startsWith(n.to) && n.to !== "/admin";
+            const exact = "exact" in n && n.exact;
+            const active = exact ? path === n.to : path.startsWith(n.to) && n.to !== "/admin";
             return (
               <Link key={n.to} to={n.to} className={"pl-3 py-1.5 text-sm border-l-2 -ml-px " + (active ? "border-ink text-ink" : "border-transparent text-neutral-gray hover:text-ink")}>
                 {n.label}

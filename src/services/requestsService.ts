@@ -1,19 +1,30 @@
-// Mock implementation — replace with Supabase in M1.
-import { db, delay, uid, pushLog } from "./_store";
+// Real Lovable Cloud custom requests / offers / chat.
+import { supabase } from "@/integrations/supabase/client";
 import type { CustomRequest, Offer, ChatMessage, UsageRights } from "@/types";
+import { mapRequestRow, mapOfferRow, mapChatRow } from "./_mappers";
 
-export async function getRequests() {
-  await delay();
-  return db.requests;
+export async function getRequests(): Promise<CustomRequest[]> {
+  const { data, error } = await supabase
+    .from("custom_requests")
+    .select("*, offers(count)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  return (data ?? []).map((r: any) => mapRequestRow(r, r.offers?.[0]?.count ?? 0));
 }
 
 export async function getRequest(id: string) {
-  await delay();
-  const request = db.requests.find((r) => r.id === id) ?? null;
+  const [{ data: request }, { data: offers }, { data: messages }] = await Promise.all([
+    supabase.from("custom_requests").select("*").eq("id", id).maybeSingle(),
+    supabase.from("offers").select("*").eq("request_id", id).order("created_at"),
+    supabase.from("chat_messages").select("*").eq("request_id", id).order("created_at"),
+  ]);
   if (!request) return null;
-  const offers = db.offers.filter((o) => o.requestId === id);
-  const messages = db.chatMessages.filter((m) => m.requestId === id);
-  return { request, offers, messages };
+  return {
+    request: mapRequestRow(request, offers?.length ?? 0),
+    offers: (offers ?? []).map(mapOfferRow),
+    messages: (messages ?? []).map(mapChatRow),
+  };
 }
 
 export async function createRequest(input: {
@@ -25,16 +36,21 @@ export async function createRequest(input: {
   deadline: string;
   usageRights: UsageRights;
 }): Promise<CustomRequest> {
-  await delay();
-  const req: CustomRequest = {
-    id: uid("req"),
-    ...input,
-    status: "open",
-    offerCount: 0,
-    createdAt: new Date().toISOString(),
-  };
-  db.requests.unshift(req);
-  return req;
+  const { data, error } = await supabase
+    .from("custom_requests")
+    .insert({
+      buyer_id: input.buyerId,
+      title: input.title,
+      brief: input.brief,
+      model_preference: input.modelPreference ?? null,
+      budget_cents: input.budgetCents,
+      deadline: input.deadline || null,
+      usage_rights: input.usageRights,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapRequestRow(data);
 }
 
 export async function submitOffer(input: {
@@ -44,42 +60,33 @@ export async function submitOffer(input: {
   priceCents: number;
   etaDays: number;
 }): Promise<Offer> {
-  await delay();
-  const offer: Offer = {
-    id: uid("of"),
-    ...input,
-    status: "pending",
-    createdAt: new Date().toISOString(),
-  };
-  db.offers.push(offer);
-  const req = db.requests.find((r) => r.id === input.requestId);
-  if (req) req.offerCount += 1;
-  return offer;
+  const { data, error } = await supabase
+    .from("offers")
+    .insert({
+      request_id: input.requestId,
+      creator_id: input.creatorId,
+      sample_direction: input.message,
+      price_cents: input.priceCents,
+      turnaround_days: input.etaDays,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapOfferRow(data);
 }
 
-export async function acceptOffer(offerId: string) {
-  await delay();
-  const offer = db.offers.find((o) => o.id === offerId);
-  if (!offer) throw new Error("Offer not found");
-  offer.status = "accepted";
-  db.offers.forEach((o) => {
-    if (o.requestId === offer.requestId && o.id !== offerId) o.status = "declined";
-  });
-  const req = db.requests.find((r) => r.id === offer.requestId);
-  if (req) req.status = "in_progress";
-  pushLog({ eventType: "admin_action", entityType: "offer", entityId: offerId, payload: { action: "accept_offer" } });
-  return offer;
+export async function acceptOffer(offerId: string): Promise<Offer> {
+  const { data, error } = await supabase.rpc("accept_offer", { _offer_id: offerId });
+  if (error) throw error;
+  return mapOfferRow(data);
 }
 
 export async function sendMessage(requestId: string, authorId: string, body: string): Promise<ChatMessage> {
-  await delay(120);
-  const msg: ChatMessage = {
-    id: uid("c"),
-    requestId,
-    authorId,
-    body,
-    createdAt: new Date().toISOString(),
-  };
-  db.chatMessages.push(msg);
-  return msg;
+  const { data, error } = await supabase
+    .from("chat_messages")
+    .insert({ request_id: requestId, sender_id: authorId, body })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapChatRow(data);
 }

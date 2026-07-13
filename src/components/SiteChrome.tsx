@@ -10,7 +10,7 @@ const NAV = [
 ] as const;
 
 export function SiteHeader() {
-  const { role } = useAuth();
+  const { isSignedIn, isCreator, isAdmin } = useAuth();
   const path = useRouterState({ select: (s) => s.location.pathname });
   return (
     <header className="border-b border-ink bg-warm sticky top-0 z-40">
@@ -22,10 +22,15 @@ export function SiteHeader() {
               {n.label}
             </Link>
           ))}
-          {role === "buyer" && <Link to="/purchases" className={path.startsWith("/purchases") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Purchases</Link>}
-          {role === "creator" && <Link to="/creator" className={path.startsWith("/creator") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Creator</Link>}
-          {role === "admin" && <Link to="/admin" className={path.startsWith("/admin") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Admin</Link>}
-          <Link to="/auth" className="text-neutral-gray hover:text-ink">Sign in</Link>
+          {isSignedIn && (
+            <Link to="/purchases" className={path.startsWith("/purchases") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Purchases</Link>
+          )}
+          {isSignedIn && (
+            <Link to="/creator" className={path.startsWith("/creator") ? "text-ink" : "text-neutral-gray hover:text-ink"}>
+              {isCreator ? "Creator" : "Sell"}
+            </Link>
+          )}
+          {isAdmin && <Link to="/admin" className={path.startsWith("/admin") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Admin</Link>}
         </nav>
         <RoleSwitcher />
       </div>

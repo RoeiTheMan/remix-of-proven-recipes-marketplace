@@ -1,31 +1,36 @@
-// Mock implementation — replace with Supabase in M1.
-import { db, delay, uid } from "./_store";
+// Real Lovable Cloud reviews service. RLS enforces one review per completed purchase.
+import { supabase } from "@/integrations/supabase/client";
 import type { Review } from "@/types";
+import { mapReviewRow } from "./_mappers";
 
 export async function createReview(purchaseId: string, rating: number, comment: string): Promise<Review> {
-  await delay();
-  const purchase = db.purchases.find((p) => p.id === purchaseId);
-  if (!purchase) throw new Error("Purchase not found");
-  const review: Review = {
-    id: uid("r"),
-    purchaseId,
-    listingId: purchase.listingId,
-    buyerId: purchase.buyerId,
-    rating,
-    comment,
-    createdAt: new Date().toISOString(),
-  };
-  db.reviews.unshift(review);
-  const listing = db.listings.find((l) => l.id === purchase.listingId);
-  if (listing) {
-    const total = listing.avgRating * listing.ratingCount + rating;
-    listing.ratingCount += 1;
-    listing.avgRating = Number((total / listing.ratingCount).toFixed(2));
-  }
-  return review;
+  const { data: purchase, error: pErr } = await supabase
+    .from("purchases")
+    .select("id,listing_id,buyer_id")
+    .eq("id", purchaseId)
+    .maybeSingle();
+  if (pErr || !purchase) throw pErr ?? new Error("Purchase not found");
+  const { data, error } = await supabase
+    .from("reviews")
+    .insert({
+      purchase_id: purchase.id,
+      listing_id: purchase.listing_id,
+      buyer_id: purchase.buyer_id,
+      rating,
+      comment,
+    })
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapReviewRow(data);
 }
 
-export async function getReviews(listingId: string) {
-  await delay();
-  return db.reviews.filter((r) => r.listingId === listingId);
+export async function getReviews(listingId: string): Promise<Review[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("listing_id", listingId)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map(mapReviewRow);
 }

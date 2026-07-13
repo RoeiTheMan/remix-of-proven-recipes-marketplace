@@ -193,3 +193,47 @@ function NewListingDialog({ onCreated }: { onCreated: () => void }) {
     </Dialog>
   );
 }
+
+function BecomeCreatorForm({ onDone }: { onDone: () => Promise<void> | void }) {
+  const [displayName, setDisplayName] = useState("");
+  const [tagline, setTagline] = useState("");
+  const [portfolio, setPortfolio] = useState("");
+  const [bio, setBio] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!displayName.trim() || !tagline.trim()) {
+      toast.error("Display name and tagline are required.");
+      return;
+    }
+    setBusy(true);
+    try {
+      await becomeCreator({ displayName, tagline, portfolioUrl: portfolio, bio });
+      toast.success("You're now a Pickture creator.");
+      await onDone();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not complete onboarding");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="max-w-2xl mx-auto px-6 py-16">
+      <span className="label-eyebrow">Become a creator</span>
+      <h1 className="font-display text-4xl mt-2">Publish verified recipes on Pickture</h1>
+      <p className="text-neutral-gray mt-3">
+        Tell buyers who you are. You keep your buyer access, and unlock the creator dashboard, listings, and offers on custom requests.
+      </p>
+      <form onSubmit={submit} className="mt-8 space-y-4">
+        <div><Label>Display name</Label><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-2" required /></div>
+        <div><Label>Tagline</Label><Input value={tagline} onChange={(e) => setTagline(e.target.value)} className="mt-2" placeholder="Editorial product photographer — Midjourney v6" required /></div>
+        <div><Label>Portfolio URL</Label><Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} className="mt-2" placeholder="https://…" /></div>
+        <div><Label>Short bio</Label><Textarea value={bio} onChange={(e) => setBio(e.target.value)} className="mt-2" rows={4} /></div>
+        <Button type="submit" variant="signal" disabled={busy}>{busy ? "Setting up…" : "Become a creator"}</Button>
+      </form>
+    </div>
+  );
+}
+

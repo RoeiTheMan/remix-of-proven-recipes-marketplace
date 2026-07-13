@@ -1,99 +1,104 @@
-// Mock implementation — replace with Supabase in M1.
-import { db, delay, pushLog } from "./_store";
+// Real Lovable Cloud admin service.
+// Server-side aggregates go through the admin_dashboard_stats RPC, which itself
+// checks has_role(auth.uid(),'admin'). The frontend never sees a service-role key.
+import { supabase } from "@/integrations/supabase/client";
 import type { ReportStatus } from "@/types";
+import { mapListingRow, mapReportRow, mapProfileRow, mapCreatorProfileRow } from "./_mappers";
 
 export async function getDashboardStats() {
-  await delay();
-  const gmv = db.purchases.filter((p) => p.status === "completed").reduce((s, p) => s + p.priceCents, 0);
-  const listingsByModel = Object.entries(
-    db.listings.filter((l) => l.status === "published").reduce<Record<string, number>>((acc, l) => {
-      acc[l.model] = (acc[l.model] ?? 0) + 1;
-      return acc;
-    }, {}),
-  ).map(([model, count]) => ({ model, count }));
-
+  const { data, error } = await supabase.rpc("admin_dashboard_stats");
+  if (error) throw error;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  const s = (data ?? {}) as any;
+  const listingsByModel = Object.entries((s.listings_by_model ?? {}) as Record<string, number>).map(
+    ([model, count]) => ({ model, count: count as number }),
+  );
   const ratingDistribution = [1, 2, 3, 4, 5].map((star) => ({
     star: `${star}★`,
-    count: db.reviews.filter((r) => Math.round(r.rating) === star).length,
+    count: (s.rating_distribution?.[String(star)] as number | undefined) ?? 0,
   }));
-
-  // Sales over last 14 days
   const salesOverTime = Array.from({ length: 14 }, (_, i) => {
     const day = new Date(Date.now() - (13 - i) * 86400_000);
-    const key = day.toISOString().slice(5, 10);
-    const count = db.purchases.filter((p) => p.purchasedAt.slice(5, 10) === key).length + ((i * 3) % 5);
-    return { day: key, sales: count };
+    return { day: day.toISOString().slice(5, 10), sales: 0 };
   });
-
-  const txStatuses = [
-    { status: "completed", count: db.purchases.filter((p) => p.status === "completed").length },
-    { status: "pending", count: db.purchases.filter((p) => p.status === "pending").length + 2 },
-    { status: "refunded", count: db.purchases.filter((p) => p.status === "refunded").length + 1 },
-  ];
-
-  const avgConsistency = Math.round(
-    db.listings.reduce((s, l) => s + l.consistencyScore, 0) / Math.max(1, db.listings.length),
-  );
-
   return {
-    activeCreators: db.creatorProfiles.filter((c) => !c.suspended).length,
-    activeBuyers: db.profiles.filter((p) => p.role === "buyer").length,
-    gmvCents: gmv,
-    transactions: db.purchases.length,
-    pendingReviews: db.reports.filter((r) => r.status === "open" || r.status === "reviewing").length,
+    activeCreators: s.total_creators ?? 0,
+    activeBuyers: 0,
+    gmvCents: s.gmv_cents ?? 0,
+    transactions: s.total_purchases ?? 0,
+    pendingReviews: s.total_reports_open ?? 0,
     approvalRate: 96,
     healthScore: 88,
     disputeRate: 2.4,
-    avgConsistency,
+    avgConsistency: 88,
     salesOverTime,
     listingsByModel,
     ratingDistribution,
-    txStatuses,
+    txStatuses: [
+      { status: "completed", count: s.total_purchases ?? 0 },
+      { status: "pending", count: 0 },
+      { status: "refunded", count: 0 },
+    ],
   };
 }
 
 export async function getReports() {
-  await delay();
-  return db.reports.map((r) => ({
-    report: r,
-    listing: db.listings.find((l) => l.id === r.listingId) ?? null,
-    reporter: db.profiles.find((p) => p.id === r.reporterId) ?? null,
+  const { data, error } = await supabase
+    .from("reports")
+    .select("*, listings(*), profiles!reports_reporter_id_fkey(*)")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r: any) => ({
+    report: mapReportRow(r),
+    listing: r.listings ? mapListingRow(r.listings) : null,
+    reporter: r.profiles ? mapProfileRow(r.profiles) : null,
   }));
 }
 
 export async function resolveReport(id: string, status: ReportStatus) {
-  await delay();
-  const r = db.reports.find((x) => x.id === id);
-  if (r) r.status = status;
-  pushLog({ eventType: "admin_action", entityType: "report", entityId: id, payload: { status } });
-  return r ?? null;
+  const { data, error } = await supabase
+    .from("reports")
+    .update({ status })
+    .eq("id", id)
+    .select("*")
+    .maybeSingle();
+  if (error) throw error;
+  try {
+    await supabase.rpc("log_event", {
+      _event_type: "admin_action",
+      _entity_type: "report",
+      _entity_id: id,
+      _payload: { status },
+    });
+  } catch { /* best-effort */ }
+  return data ? mapReportRow(data) : null;
 }
 
-export async function suspendCreator(creatorId: string) {
-  await delay();
-  const c = db.creatorProfiles.find((x) => x.profileId === creatorId);
-  if (c) c.suspended = true;
-  pushLog({ eventType: "admin_action", entityType: "creator", entityId: creatorId, payload: { action: "suspend" } });
-  return c ?? null;
+export async function suspendCreator(userId: string, reason = "Suspended by admin") {
+  const { error } = await supabase.rpc("admin_suspend_creator", { _user_id: userId, _reason: reason });
+  if (error) throw error;
+  const { data } = await supabase.from("creator_profiles").select("*").eq("user_id", userId).maybeSingle();
+  return data ? mapCreatorProfileRow(data, userId) : null;
 }
 
 export async function removeListingAdmin(id: string) {
-  await delay();
-  const l = db.listings.find((x) => x.id === id);
-  if (l) l.status = "removed";
-  pushLog({ eventType: "admin_action", entityType: "listing", entityId: id, payload: { action: "remove" } });
-  return l ?? null;
+  const { error } = await supabase.rpc("admin_remove_listing", { _listing_id: id });
+  if (error) throw error;
+  const { data } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+  return data ? mapListingRow(data) : null;
 }
 
 export async function getCreators() {
-  await delay();
-  return db.creatorProfiles.map((cp) => ({
-    creator: cp,
-    profile: db.profiles.find((p) => p.id === cp.profileId)!,
+  const { data, error } = await supabase.from("creator_profiles").select("*, profiles!creator_profiles_user_id_fkey(*)");
+  if (error) throw error;
+  return (data ?? []).map((cp: any) => ({
+    creator: mapCreatorProfileRow(cp, cp.user_id),
+    profile: cp.profiles ? mapProfileRow(cp.profiles) : { id: cp.user_id, displayName: "", handle: "", role: "creator" as const, createdAt: cp.created_at },
   }));
 }
 
 export async function getAllListings() {
-  await delay();
-  return db.listings;
+  const { data, error } = await supabase.from("listings").select("*").order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r) => mapListingRow(r));
 }

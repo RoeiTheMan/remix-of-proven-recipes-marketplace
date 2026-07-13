@@ -76,8 +76,8 @@ export async function becomeCreator(input: {
   const { data, error } = await supabase.rpc("become_creator", {
     _display_name: input.displayName,
     _tagline: input.tagline,
-    _portfolio_url: input.portfolioUrl ?? null,
-    _bio: input.bio ?? null,
+    _portfolio_url: input.portfolioUrl ?? "",
+    _bio: input.bio ?? "",
   });
   if (error) throw error;
   return data;

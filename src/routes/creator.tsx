@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getListingsByCreator, createListing } from "@/services/listingsService";
+import { becomeCreator } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
 import { StatCard } from "@/components/StatCard";
 import { Button } from "@/components/ui/button";
@@ -19,15 +20,29 @@ import type { UsageRights } from "@/types";
 export const Route = createFileRoute("/creator")({ component: Creator });
 
 function Creator() {
-  const { user, role } = useAuth();
+  const { user, isSignedIn, isCreator, refresh, loading } = useAuth();
   const qc = useQueryClient();
   const { data: listings = [] } = useQuery({
     queryKey: ["creator-listings", user?.id],
     queryFn: () => (user ? getListingsByCreator(user.id) : Promise.resolve([])),
-    enabled: !!user,
+    enabled: !!user && isCreator,
   });
 
-  if (role !== "creator") return <div className="max-w-3xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Creator only</h1><p className="text-neutral-gray mt-2">Switch to Creator role to open your dashboard.</p></div>;
+  if (loading) return <div className="max-w-3xl mx-auto px-6 py-16 text-neutral-gray">Loading…</div>;
+
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <span className="label-eyebrow">Creator</span>
+        <h1 className="font-display text-4xl mt-2">Sign in to sell recipes</h1>
+        <p className="text-neutral-gray mt-2">You need an account before publishing to the marketplace.</p>
+        <Button asChild className="mt-6" variant="signal"><Link to="/auth" search={{ next: "/creator" }}>Sign in</Link></Button>
+      </div>
+    );
+  }
+
+  if (!isCreator) return <BecomeCreatorForm onDone={refresh} />;
+
 
   const published = listings.filter((l) => l.status === "published");
   const sales = published.reduce((s, l) => s + l.salesCount, 0);

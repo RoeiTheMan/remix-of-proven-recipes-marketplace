@@ -59,8 +59,8 @@ export async function getCurrentProfile(): Promise<{ profile: Profile; roles: Ro
     prof ?? {
       id: user.id,
       display_name: user.email?.split("@")[0] ?? "User",
-      avatar_url: null,
-      created_at: user.created_at,
+      avatar_url: undefined,
+      created_at: user.created_at ?? new Date().toISOString(),
     };
 
   return { profile: mapProfileRow(profileRow, highest), roles };

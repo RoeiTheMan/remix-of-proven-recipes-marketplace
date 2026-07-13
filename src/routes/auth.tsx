@@ -25,6 +25,7 @@ function Auth() {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   async function submit(kind: "in" | "up", e: React.FormEvent) {
     e.preventDefault();
@@ -34,18 +35,52 @@ function Auth() {
       if (kind === "in") {
         await signIn(email, password);
         toast.success("Welcome back.");
+        await refresh();
+        nav({ to: (next as "/" | undefined) ?? "/browse" });
       } else {
-        await signUp(email, password, displayName || email.split("@")[0]);
-        toast.success("Account created.");
+        const res = await signUp(email, password, displayName || email.split("@")[0]);
+        if (res.session) {
+          toast.success("Account created.");
+          await refresh();
+          nav({ to: (next as "/" | undefined) ?? "/browse" });
+        } else {
+          toast.success("Account created. Check your email to verify your account.");
+          setPendingEmail(email);
+        }
       }
-      await refresh();
-      nav({ to: (next as "/" | undefined) ?? "/browse" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      const msg = /email not confirmed|not.*confirm/i.test(raw)
+        ? "Your email has not been verified yet. Check your inbox and click the verification link."
+        : raw;
       toast.error(msg);
     } finally {
       setBusy(false);
     }
+  }
+
+  if (pendingEmail) {
+    return (
+      <div className="max-w-md mx-auto px-6 py-20">
+        <span className="label-eyebrow">Account</span>
+        <h1 className="font-display text-4xl mt-2 mb-4">Check your email</h1>
+        <p className="text-ink-black/80">
+          We sent a verification link to <strong>{pendingEmail}</strong>. Open the email and confirm your address before signing in.
+        </p>
+        <p className="text-sm text-neutral-gray mt-3">
+          Can't find it? Check your spam or promotions folder.
+        </p>
+        <Button
+          className="w-full mt-8"
+          onClick={() => {
+            setPendingEmail(null);
+            setPassword("");
+          }}
+        >
+          Back to sign in
+        </Button>
+      </div>
+    );
   }
 
   return (

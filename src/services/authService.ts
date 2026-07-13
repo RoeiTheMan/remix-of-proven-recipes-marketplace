@@ -15,16 +15,17 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signUp(email: string, password: string, displayName?: string) {
-  const { error } = await supabase.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined,
+      emailRedirectTo:
+        typeof window !== "undefined" ? `${window.location.origin}/auth` : undefined,
       data: displayName ? { display_name: displayName } : undefined,
     },
   });
   if (error) throw error;
-  return { ok: true as const };
+  return { ok: true as const, session: data.session, user: data.user };
 }
 
 export async function signOut() {

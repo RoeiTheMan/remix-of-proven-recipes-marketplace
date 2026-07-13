@@ -1,6 +1,7 @@
-// Mock implementation — replace with Supabase in M1.
-import { db, delay } from "./_store";
-import type { LogEventType, LogLevel } from "@/types";
+// Real Lovable Cloud logs service. RLS restricts SELECT to admins only.
+import { supabase } from "@/integrations/supabase/client";
+import type { LogEventType, LogLevel, LogEvent } from "@/types";
+import { mapLogRow } from "./_mappers";
 
 export interface LogFilters {
   eventType?: LogEventType;
@@ -9,12 +10,13 @@ export interface LogFilters {
   since?: string;
 }
 
-export async function query(filters: LogFilters = {}) {
-  await delay();
-  let out = [...db.logs];
-  if (filters.eventType) out = out.filter((l) => l.eventType === filters.eventType);
-  if (filters.level) out = out.filter((l) => l.level === filters.level);
-  if (filters.actorId) out = out.filter((l) => l.actorId === filters.actorId);
-  if (filters.since) out = out.filter((l) => l.createdAt >= filters.since!);
-  return out.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+export async function query(filters: LogFilters = {}): Promise<LogEvent[]> {
+  let q = supabase.from("logs").select("*").order("created_at", { ascending: false }).limit(500);
+  if (filters.eventType) q = q.eq("event_type", filters.eventType);
+  if (filters.level) q = q.eq("level", filters.level);
+  if (filters.actorId) q = q.eq("actor_id", filters.actorId);
+  if (filters.since) q = q.gte("created_at", filters.since);
+  const { data, error } = await q;
+  if (error) throw error;
+  return (data ?? []).map(mapLogRow);
 }

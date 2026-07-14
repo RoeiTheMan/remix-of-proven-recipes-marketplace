@@ -29,6 +29,9 @@ function PurchaseDetail() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const commentRef = useRef<HTMLTextAreaElement>(null);
+  const hash = useRouterState({ select: (s) => s.location.hash });
 
   useEffect(() => {
     if (data?.existingReview) {
@@ -36,6 +39,15 @@ function PurchaseDetail() {
       setComment(data.existingReview.comment);
     }
   }, [data?.existingReview]);
+
+  useEffect(() => {
+    if (hash === "review" && data && reviewRef.current) {
+      reviewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (!data.existingReview) {
+        setTimeout(() => commentRef.current?.focus(), 300);
+      }
+    }
+  }, [hash, data]);
 
   if (loading || isLoading) return <div className="max-w-4xl mx-auto px-6 py-16 text-neutral-gray">Loading…</div>;
   if (!isSignedIn) {

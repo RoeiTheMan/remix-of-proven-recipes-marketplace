@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Flag, Lock, Check } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { modelLabel as modelLabelSafe } from "@/lib/models";
 
 export const Route = createFileRoute("/listing/$id")({ component: ListingDetail });
 
@@ -74,7 +75,7 @@ function ListingDetail() {
           <span className="text-xs text-neutral-gray">{listing.salesCount} sales</span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="outline">{listing.model} {listing.modelVersion}</Badge>
+          <Badge variant="outline">{modelLabelSafe(listing.model)} {listing.modelVersion}</Badge>
           <Badge variant="outline">{listing.aspectRatio}</Badge>
           <Badge variant="outline" className="capitalize">{listing.usageRights} rights</Badge>
           <ConsistencyBadge score={listing.consistencyScore} size="md" />

@@ -22,7 +22,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <h3 className="font-display text-lg leading-tight text-ink line-clamp-2">{listing.title}</h3>
         </Link>
         <div className="text-xs text-neutral-gray">
-          {listing.model} · <span className="font-mono">{listing.modelVersion}</span> · {listing.aspectRatio}
+          {modelLabel(listing.model)} · {listing.aspectRatio}
         </div>
         <div className="flex items-center justify-between mt-auto pt-3 border-t border-border">
           <ReviewStars rating={listing.avgRating} count={listing.ratingCount} />

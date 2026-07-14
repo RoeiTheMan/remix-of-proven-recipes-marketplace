@@ -219,7 +219,12 @@ export async function createListing(draft: ListingDraft): Promise<Listing> {
 }
 
 export async function updateListing(id: string, patch: Partial<ListingDraft>): Promise<Listing> {
-  const listingUpdate: Record<string, unknown> = {};
+  const listingUpdate: Partial<{
+    title: string; description: string; model: string; model_version: string;
+    aspect_ratio: string; image_type: string; style_tags: string[];
+    usage_rights: Listing["usageRights"]; price_cents: number;
+    partial_prompt_preview: string; consistency_score: number;
+  }> = {};
   if (patch.title !== undefined) listingUpdate.title = patch.title;
   if (patch.description !== undefined) listingUpdate.description = patch.description;
   if (patch.model !== undefined) listingUpdate.model = patch.model;

@@ -177,7 +177,7 @@ function PurchaseDetail() {
       </div>
 
       <aside className="space-y-4">
-        <div className="border border-border bg-card p-5">
+        <div ref={reviewRef} id="review" className="border border-border bg-card p-5 scroll-mt-24">
           <span className="label-eyebrow">Verified purchase review</span>
           {hasReview ? (
             <div className="mt-4 space-y-2">
@@ -195,6 +195,7 @@ function PurchaseDetail() {
                 ))}
               </div>
               <Textarea
+                ref={commentRef}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="How reproducible was it? (10-1000 characters)"

@@ -84,9 +84,9 @@ const RequestsIdRoute = RequestsIdRouteImport.update({
   getParentRoute: () => RequestsRoute,
 } as any)
 const PurchasesIdRoute = PurchasesIdRouteImport.update({
-  id: '/purchases/$id',
-  path: '/purchases/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => PurchasesRoute,
 } as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
@@ -251,7 +251,6 @@ export interface RootRouteChildren {
   RequestsRoute: typeof RequestsRouteWithChildren
   CreatorProfileCreatorIdRoute: typeof CreatorProfileCreatorIdRoute
   ListingIdRoute: typeof ListingIdRoute
-  PurchasesIdRoute: typeof PurchasesIdRoute
   PurchasesIndexRoute: typeof PurchasesIndexRoute
 }
 
@@ -336,10 +335,10 @@ declare module '@tanstack/react-router' {
     }
     '/purchases/$id': {
       id: '/purchases/$id'
-      path: '/purchases/$id'
+      path: '/$id'
       fullPath: '/purchases/$id'
       preLoaderRoute: typeof PurchasesIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PurchasesRoute
     }
     '/listing/$id': {
       id: '/listing/$id'
@@ -428,9 +427,18 @@ const rootRouteChildren: RootRouteChildren = {
   RequestsRoute: RequestsRouteWithChildren,
   CreatorProfileCreatorIdRoute: CreatorProfileCreatorIdRoute,
   ListingIdRoute: ListingIdRoute,
-  PurchasesIdRoute: PurchasesIdRoute,
   PurchasesIndexRoute: PurchasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

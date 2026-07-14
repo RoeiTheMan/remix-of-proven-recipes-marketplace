@@ -4,6 +4,7 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { Button } from "./ui/button";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { modelLabel } from "@/lib/models";
 
 export function MatchResultCard({ result }: { result: AdvisorResult }) {
   const { listing, matchPct, rationale } = result;
@@ -19,7 +20,7 @@ export function MatchResultCard({ result }: { result: AdvisorResult }) {
             <span className="label-eyebrow">match</span>
           </span>
           <ConsistencyBadge score={listing.consistencyScore} />
-          <span className="label-eyebrow">{listing.model} {listing.modelVersion}</span>
+          <span className="label-eyebrow">{modelLabel(listing.model)}</span>
         </div>
         <h3 className="font-display text-lg leading-tight">{listing.title}</h3>
         <p className="text-sm text-neutral-gray">{rationale}</p>

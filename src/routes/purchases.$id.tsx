@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouterState } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getPurchase } from "@/services/purchasesService";
 import { createReview } from "@/services/reviewsService";
@@ -29,6 +29,9 @@ function PurchaseDetail() {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [busy, setBusy] = useState(false);
+  const reviewRef = useRef<HTMLDivElement>(null);
+  const commentRef = useRef<HTMLTextAreaElement>(null);
+  const hash = useRouterState({ select: (s) => s.location.hash });
 
   useEffect(() => {
     if (data?.existingReview) {
@@ -36,6 +39,15 @@ function PurchaseDetail() {
       setComment(data.existingReview.comment);
     }
   }, [data?.existingReview]);
+
+  useEffect(() => {
+    if (hash === "review" && data && reviewRef.current) {
+      reviewRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (!data.existingReview) {
+        setTimeout(() => commentRef.current?.focus(), 300);
+      }
+    }
+  }, [hash, data]);
 
   if (loading || isLoading) return <div className="max-w-4xl mx-auto px-6 py-16 text-neutral-gray">Loading…</div>;
   if (!isSignedIn) {
@@ -165,7 +177,7 @@ function PurchaseDetail() {
       </div>
 
       <aside className="space-y-4">
-        <div className="border border-border bg-card p-5">
+        <div ref={reviewRef} id="review" className="border border-border bg-card p-5 scroll-mt-24">
           <span className="label-eyebrow">Verified purchase review</span>
           {hasReview ? (
             <div className="mt-4 space-y-2">
@@ -183,6 +195,7 @@ function PurchaseDetail() {
                 ))}
               </div>
               <Textarea
+                ref={commentRef}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="How reproducible was it? (10-1000 characters)"

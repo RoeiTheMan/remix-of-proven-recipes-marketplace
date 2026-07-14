@@ -1,10 +1,12 @@
 // Real Lovable Cloud listings service.
-// Falls back to seed mocks when the database is empty so the M0 UI stays populated
-// on a brand-new project. Any real listing hides mocks.
+// Uses signed URLs for the private listing-images bucket.
+// Falls back to seed mocks only when the DB catalog is completely empty.
 import { supabase } from "@/integrations/supabase/client";
-import type { Listing, RecipeSecret } from "@/types";
+import type { Listing, ListingStatus, RecipeSecret } from "@/types";
 import { mapListingRow, mapRecipeSecretRow } from "./_mappers";
 import * as seeds from "@/mocks";
+
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
 
 export interface ListingFilters {
   q?: string;
@@ -18,19 +20,65 @@ export interface ListingFilters {
 }
 export type ListingSort = "top_rated" | "price_asc" | "newest" | "best_consistency";
 
-async function fetchImagePaths(listingIds: string[]): Promise<Record<string, string[]>> {
+export interface ListingImageRow {
+  id: string;
+  listingId: string;
+  storagePath: string;
+  signedUrl: string;
+  isCover: boolean;
+  sortOrder: number;
+}
+
+async function signPaths(paths: string[]): Promise<Record<string, string>> {
+  if (paths.length === 0) return {};
+  const { data, error } = await supabase.storage
+    .from("listing-images")
+    .createSignedUrls(paths, SIGNED_URL_TTL);
+  if (error) return {};
+  const map: Record<string, string> = {};
+  for (const row of data ?? []) {
+    if (row.path && row.signedUrl) map[row.path] = row.signedUrl;
+  }
+  return map;
+}
+
+async function fetchImageUrlsByListing(listingIds: string[]): Promise<Record<string, string[]>> {
   if (listingIds.length === 0) return {};
   const { data } = await supabase
     .from("listing_images")
     .select("listing_id,storage_path,is_cover,sort_order")
     .in("listing_id", listingIds)
+    .order("is_cover", { ascending: false })
     .order("sort_order");
+  const rows = data ?? [];
+  const allPaths = rows.map((r) => r.storage_path);
+  const signed = await signPaths(allPaths);
   const map: Record<string, string[]> = {};
-  for (const row of data ?? []) {
-    const url = supabase.storage.from("listing-images").getPublicUrl(row.storage_path).data.publicUrl;
-    (map[row.listing_id] ??= []).push(url);
+  for (const row of rows) {
+    const url = signed[row.storage_path];
+    if (url) (map[row.listing_id] ??= []).push(url);
   }
   return map;
+}
+
+export async function getListingImages(listingId: string): Promise<ListingImageRow[]> {
+  const { data, error } = await supabase
+    .from("listing_images")
+    .select("*")
+    .eq("listing_id", listingId)
+    .order("is_cover", { ascending: false })
+    .order("sort_order");
+  if (error) throw error;
+  const rows = data ?? [];
+  const signed = await signPaths(rows.map((r) => r.storage_path));
+  return rows.map((r) => ({
+    id: r.id,
+    listingId: r.listing_id,
+    storagePath: r.storage_path,
+    signedUrl: signed[r.storage_path] ?? "",
+    isCover: !!r.is_cover,
+    sortOrder: r.sort_order ?? 0,
+  }));
 }
 
 function applyClientFilters(items: Listing[], filters: ListingFilters, sort: ListingSort): Listing[] {
@@ -67,10 +115,9 @@ export async function getListings(filters: ListingFilters = {}, sort: ListingSor
 
   let items: Listing[];
   if (!data || data.length === 0) {
-    // Empty DB — surface mock catalog so the UI is populated on new projects.
     items = seeds.listings.filter((l) => l.status === "published");
   } else {
-    const imgs = await fetchImagePaths(data.map((r) => r.id));
+    const imgs = await fetchImageUrlsByListing(data.map((r) => r.id));
     items = data.map((r) => mapListingRow(r, imgs[r.id] ?? []));
   }
 
@@ -86,7 +133,7 @@ export async function getListing(id: string) {
     const secret = mock ? (seeds.recipeSecrets.find((r) => r.listingId === id) ?? null) : null;
     return { listing: mock, secret };
   }
-  const imgs = await fetchImagePaths([id]);
+  const imgs = await fetchImageUrlsByListing([id]);
   const { data: secretRow } = await supabase
     .from("recipe_secrets")
     .select("*")
@@ -103,7 +150,7 @@ export async function getRecipeSecret(id: string): Promise<RecipeSecret | null> 
   return data ? mapRecipeSecretRow(data) : null;
 }
 
-export async function createListing(draft: {
+export interface ListingDraft {
   creatorId: string;
   title: string;
   description: string;
@@ -121,7 +168,14 @@ export async function createListing(draft: {
   negativePrompt: string;
   settings: Record<string, string | number>;
   usageNotes: string;
-}): Promise<Listing> {
+  status?: ListingStatus;
+}
+
+export async function createListing(draft: ListingDraft): Promise<Listing> {
+  const status = draft.status === "draft" ? "draft" : "published";
+  const partial =
+    draft.partialPromptPreview?.trim() ||
+    draft.fullPrompt.slice(0, 80) + (draft.fullPrompt.length > 80 ? "..." : "");
   const { data: inserted, error } = await supabase
     .from("listings")
     .insert({
@@ -135,9 +189,9 @@ export async function createListing(draft: {
       style_tags: draft.styleTags,
       usage_rights: draft.usageRights,
       price_cents: draft.priceCents,
-      partial_prompt_preview: draft.fullPrompt.slice(0, 80) + (draft.fullPrompt.length > 80 ? "..." : ""),
+      partial_prompt_preview: partial,
       consistency_score: draft.consistencyScore,
-      status: "published",
+      status,
     })
     .select("*")
     .single();
@@ -164,6 +218,60 @@ export async function createListing(draft: {
   return mapListingRow(inserted);
 }
 
+export async function updateListing(id: string, patch: Partial<ListingDraft>): Promise<Listing> {
+  const listingUpdate: Record<string, unknown> = {};
+  if (patch.title !== undefined) listingUpdate.title = patch.title;
+  if (patch.description !== undefined) listingUpdate.description = patch.description;
+  if (patch.model !== undefined) listingUpdate.model = patch.model;
+  if (patch.modelVersion !== undefined) listingUpdate.model_version = patch.modelVersion;
+  if (patch.aspectRatio !== undefined) listingUpdate.aspect_ratio = patch.aspectRatio;
+  if (patch.imageType !== undefined) listingUpdate.image_type = patch.imageType;
+  if (patch.styleTags !== undefined) listingUpdate.style_tags = patch.styleTags;
+  if (patch.usageRights !== undefined) listingUpdate.usage_rights = patch.usageRights;
+  if (patch.priceCents !== undefined) listingUpdate.price_cents = patch.priceCents;
+  if (patch.partialPromptPreview !== undefined) listingUpdate.partial_prompt_preview = patch.partialPromptPreview;
+  if (patch.consistencyScore !== undefined) listingUpdate.consistency_score = patch.consistencyScore;
+
+  let updated = null;
+  if (Object.keys(listingUpdate).length > 0) {
+    const { data, error } = await supabase.from("listings").update(listingUpdate).eq("id", id).select("*").single();
+    if (error) throw error;
+    updated = data;
+  } else {
+    const { data } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
+    updated = data;
+  }
+
+  const secretPatch: Record<string, unknown> = {};
+  if (patch.fullPrompt !== undefined) secretPatch.full_prompt = patch.fullPrompt;
+  if (patch.negativePrompt !== undefined) secretPatch.negative_prompt = patch.negativePrompt;
+  if (patch.settings !== undefined) secretPatch.settings = patch.settings;
+  if (patch.usageNotes !== undefined) secretPatch.usage_notes = patch.usageNotes;
+  if (Object.keys(secretPatch).length > 0) {
+    // upsert in case a legacy listing has no recipe_secrets row yet
+    const { error } = await supabase
+      .from("recipe_secrets")
+      .upsert({ listing_id: id, ...secretPatch }, { onConflict: "listing_id" });
+    if (error) throw error;
+  }
+  if (!updated) throw new Error("listing_not_found");
+  return mapListingRow(updated);
+}
+
+export async function setListingStatus(id: string, status: "draft" | "published"): Promise<Listing> {
+  const { data, error } = await supabase.rpc("set_listing_status", {
+    _listing_id: id,
+    _status: status,
+  });
+  if (error) throw error;
+  return mapListingRow(data);
+}
+
+export async function deleteListing(id: string): Promise<void> {
+  const { error } = await supabase.rpc("delete_listing_if_safe", { _listing_id: id });
+  if (error) throw error;
+}
+
 export async function removeListing(id: string) {
   const { error } = await supabase.rpc("admin_remove_listing", { _listing_id: id });
   if (error) throw error;
@@ -178,21 +286,81 @@ export async function getListingsByCreator(creatorId: string) {
     .eq("creator_id", creatorId)
     .order("created_at", { ascending: false });
   if (error) throw error;
-  const imgs = await fetchImagePaths((data ?? []).map((r) => r.id));
+  const imgs = await fetchImageUrlsByListing((data ?? []).map((r) => r.id));
   return (data ?? []).map((r) => mapListingRow(r, imgs[r.id] ?? []));
 }
 
-// Storage helper: upload an image for a listing under listing-images/{listing_id}/{filename}.
-export async function uploadListingImage(listingId: string, file: File): Promise<string> {
-  const ext = file.name.split(".").pop() || "png";
+// ---- image management --------------------------------------------------
+
+export async function uploadListingImage(listingId: string, file: File): Promise<ListingImageRow> {
+  const ext = (file.name.split(".").pop() || "png").toLowerCase();
   const path = `${listingId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-  const { error } = await supabase.storage.from("listing-images").upload(path, file);
-  if (error) throw error;
-  const { error: rowError } = await supabase.from("listing_images").insert({
-    listing_id: listingId,
-    storage_path: path,
-    is_cover: false,
+  const { error } = await supabase.storage.from("listing-images").upload(path, file, {
+    upsert: false,
+    contentType: file.type || undefined,
   });
-  if (rowError) throw rowError;
-  return path;
+  if (error) throw error;
+
+  // Existing image count → next sort_order; cover only if first.
+  const { count } = await supabase
+    .from("listing_images")
+    .select("id", { count: "exact", head: true })
+    .eq("listing_id", listingId);
+  const isFirst = (count ?? 0) === 0;
+
+  const { data: row, error: rowError } = await supabase
+    .from("listing_images")
+    .insert({
+      listing_id: listingId,
+      storage_path: path,
+      is_cover: isFirst,
+      sort_order: count ?? 0,
+    })
+    .select("*")
+    .single();
+  if (rowError) {
+    await supabase.storage.from("listing-images").remove([path]).catch(() => {});
+    throw rowError;
+  }
+  const signed = await signPaths([path]);
+  return {
+    id: row.id,
+    listingId: row.listing_id,
+    storagePath: row.storage_path,
+    signedUrl: signed[path] ?? "",
+    isCover: !!row.is_cover,
+    sortOrder: row.sort_order ?? 0,
+  };
+}
+
+export async function deleteListingImage(imageId: string): Promise<void> {
+  const { data: row } = await supabase.from("listing_images").select("*").eq("id", imageId).maybeSingle();
+  if (!row) return;
+  await supabase.from("listing_images").delete().eq("id", imageId);
+  await supabase.storage.from("listing-images").remove([row.storage_path]).catch(() => {});
+  if (row.is_cover) {
+    const { data: next } = await supabase
+      .from("listing_images")
+      .select("id")
+      .eq("listing_id", row.listing_id)
+      .order("sort_order")
+      .limit(1)
+      .maybeSingle();
+    if (next) await supabase.from("listing_images").update({ is_cover: true }).eq("id", next.id);
+  }
+}
+
+export async function setCoverImage(imageId: string): Promise<void> {
+  const { data: row } = await supabase.from("listing_images").select("listing_id").eq("id", imageId).maybeSingle();
+  if (!row) return;
+  await supabase.from("listing_images").update({ is_cover: false }).eq("listing_id", row.listing_id);
+  await supabase.from("listing_images").update({ is_cover: true }).eq("id", imageId);
+}
+
+export async function reorderImages(listingId: string, orderedIds: string[]): Promise<void> {
+  await Promise.all(
+    orderedIds.map((id, idx) =>
+      supabase.from("listing_images").update({ sort_order: idx }).eq("id", id).eq("listing_id", listingId),
+    ),
+  );
 }

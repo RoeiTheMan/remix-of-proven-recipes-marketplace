@@ -5,6 +5,7 @@ import { ConsistencyBadge } from "./ConsistencyBadge";
 import { ReviewStars } from "./ReviewStars";
 import { Button } from "./ui/button";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { modelLabel } from "@/lib/models";
 
 export function ListingCard({ listing }: { listing: Listing }) {
   return (

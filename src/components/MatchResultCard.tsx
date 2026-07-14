@@ -3,13 +3,15 @@ import type { AdvisorResult } from "@/services/advisorService";
 import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { Button } from "./ui/button";
+import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { modelLabel } from "@/lib/models";
 
 export function MatchResultCard({ result }: { result: AdvisorResult }) {
   const { listing, matchPct, rationale } = result;
   return (
     <div className="flex gap-4 border border-border bg-card p-4">
-      <div className="w-32 shrink-0">
-        <ImagePlaceholder id={listing.previewImages[0]} label={listing.imageType} ratio="aspect-square" />
+      <div className="w-40 shrink-0">
+        <ImagePlaceholder id={getDemoListingArtwork(listing)} label={listing.imageType} ratio="aspect-[4/5]" />
       </div>
       <div className="flex-1 flex flex-col gap-2 min-w-0">
         <div className="flex items-center gap-3">
@@ -18,7 +20,7 @@ export function MatchResultCard({ result }: { result: AdvisorResult }) {
             <span className="label-eyebrow">match</span>
           </span>
           <ConsistencyBadge score={listing.consistencyScore} />
-          <span className="label-eyebrow">{listing.model} {listing.modelVersion}</span>
+          <span className="label-eyebrow">{modelLabel(listing.model)}</span>
         </div>
         <h3 className="font-display text-lg leading-tight">{listing.title}</h3>
         <p className="text-sm text-neutral-gray">{rationale}</p>

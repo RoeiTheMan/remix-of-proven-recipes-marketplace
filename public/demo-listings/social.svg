@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Social media campaign flatlay">
+  <rect width="800" height="1000" fill="#E4DCC9"/>
+  <rect x="140" y="240" width="180" height="380" rx="20" fill="#F5EFE4" stroke="#14100D" stroke-width="3"/>
+  <rect x="170" y="280" width="120" height="14" fill="#B8AC94"/>
+  <rect x="170" y="310" width="80" height="10" fill="#B8AC94"/>
+  <rect x="360" y="180" width="140" height="140" rx="70" fill="#D9CFBB" stroke="#14100D" stroke-width="3"/>
+  <rect x="380" y="320" width="100" height="18" rx="4" fill="#14100D"/>
+  <rect x="540" y="260" width="140" height="240" rx="18" fill="#F5EFE4" stroke="#14100D" stroke-width="3"/>
+  <rect x="560" y="290" width="100" height="10" fill="#0F766E"/>
+  <circle cx="260" cy="720" r="80" fill="#B8AC94" stroke="#14100D" stroke-width="3"/>
+  <path d="M420 640 Q 460 620 500 640 Q 540 700 500 780 Q 460 800 420 780 Q 380 700 420 640 Z" fill="#a8b998"/>
+  <rect x="560" y="620" width="140" height="180" rx="16" fill="#D9CFBB" stroke="#14100D" stroke-width="3"/>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">SOCIAL · FLATLAY</text>
+  </g>
+</svg>

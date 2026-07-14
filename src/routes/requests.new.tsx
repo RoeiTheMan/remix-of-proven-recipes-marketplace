@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UsageRights } from "@/types";
+import { SUPPORTED_MODELS } from "@/lib/models";
 
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
@@ -50,7 +51,7 @@ function NewRequest() {
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger className="mt-2"><SelectValue placeholder="Any" /></SelectTrigger>
               <SelectContent>
-                {["Midjourney", "Flux", "SDXL", "DALL-E", "Gemini Image"].map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.label}>{m.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

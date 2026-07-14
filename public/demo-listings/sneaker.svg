@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Cinematic sneaker advertisement">
+  <rect width="800" height="1000" fill="#F5EFE4"/>
+  <rect y="700" width="800" height="300" fill="#B8AC94"/>
+  <line x1="0" y1="720" x2="800" y2="720" stroke="#14100D" stroke-width="1" opacity=".3"/>
+  <g transform="translate(120 460)">
+    <path d="M0 160 C 20 100 80 60 180 60 L 300 60 C 360 60 400 40 440 40 C 500 40 540 90 560 140 L 560 180 C 560 210 540 220 500 220 L 40 220 C 10 220 0 200 0 180 Z" fill="#14100D"/>
+    <path d="M60 160 L 80 60 M 130 130 L 150 60 M 220 60 L 230 130 M 300 60 L 300 130" stroke="#F5EFE4" stroke-width="4"/>
+    <rect x="20" y="180" width="520" height="20" fill="#1F4FD9"/>
+    <circle cx="120" cy="220" r="30" fill="#F5EFE4" stroke="#14100D" stroke-width="4"/>
+    <circle cx="440" cy="220" r="30" fill="#F5EFE4" stroke="#14100D" stroke-width="4"/>
+  </g>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">CINEMATIC · SNEAKER AD</text>
+  </g>
+</svg>

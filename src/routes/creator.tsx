@@ -28,6 +28,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Star, ArrowUp, ArrowDown, Trash2, Image as ImageIcon, Eye, Pencil } from "lucide-react";
 import type { Listing, UsageRights } from "@/types";
+import { SUPPORTED_MODELS, modelLabel } from "@/lib/models";
+import { getDemoListingArtwork } from "@/lib/demoArtwork";
 
 export const Route = createFileRoute("/creator")({ component: Creator });
 
@@ -50,12 +52,12 @@ interface DraftForm {
 }
 
 const EMPTY_FORM: DraftForm = {
-  title: "", description: "", model: "Midjourney", modelVersion: "v6.1",
-  aspectRatio: "3:2", imageType: "Product Shot", styleTags: "editorial, product",
+  title: "", description: "", model: "midjourney-v7", modelVersion: "v7",
+  aspectRatio: "3:2", imageType: "Product", styleTags: "editorial, product",
   usageRights: "commercial", priceCents: 1500, consistencyScore: 90,
   fullPrompt: "", negativePrompt: "low-res, watermark, deformed",
   partialPromptPreview: "", usageNotes: "",
-  settings: { steps: 32, cfg: 6.5, sampler: "DPM++ 2M Karras" },
+  settings: { steps: 32, cfg: 6.5, sampler: "default" },
 };
 
 function Creator() {
@@ -175,8 +177,15 @@ function ListingRow({ listing, onChanged }: { listing: Listing; onChanged: () =>
 
   return (
     <TableRow>
-      <TableCell className="font-medium max-w-[280px] truncate">{listing.title}</TableCell>
-      <TableCell>{listing.model} {listing.modelVersion}</TableCell>
+      <TableCell className="font-medium max-w-[320px]">
+        <div className="flex items-center gap-3">
+          <div className="h-12 w-12 border border-border overflow-hidden bg-secondary shrink-0">
+            <img src={getDemoListingArtwork(listing)} alt="" className="h-full w-full object-cover" />
+          </div>
+          <span className="truncate">{listing.title}</span>
+        </div>
+      </TableCell>
+      <TableCell>{modelLabel(listing.model)} {listing.modelVersion}</TableCell>
       <TableCell className="label-eyebrow">{listing.status}</TableCell>
       <TableCell className="text-right font-mono">${(listing.priceCents / 100).toFixed(2)}</TableCell>
       <TableCell className="text-right">{listing.salesCount}</TableCell>
@@ -302,9 +311,12 @@ function ListingEditorDialog({
             <Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
             <div className="grid grid-cols-2 gap-3">
               <div><Label>Model</Label>
-                <Select value={form.model} onValueChange={(v) => setForm({ ...form, model: v })}>
+                <Select value={form.model} onValueChange={(v) => {
+                  const m = SUPPORTED_MODELS.find((x) => x.value === v);
+                  setForm({ ...form, model: v, modelVersion: m?.defaultVersion ?? form.modelVersion });
+                }}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>{["Midjourney", "Flux", "SDXL", "DALL-E", "Gemini Image"].map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}</SelectContent>
+                  <SelectContent>{SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div><Label>Version</Label><Input value={form.modelVersion} onChange={(e) => setForm({ ...form, modelVersion: e.target.value })} /></div>
@@ -317,10 +329,9 @@ function ListingEditorDialog({
         )}
         {step === 2 && (
           <div className="space-y-3">
-            <Label>Partial prompt preview (shown before purchase)</Label>
-            <Textarea rows={2} value={form.partialPromptPreview} onChange={(e) => setForm({ ...form, partialPromptPreview: e.target.value })} placeholder="warm editorial product photograph of a matte ceramic vase..." />
             <Label>Full prompt (unlocked after purchase)</Label>
             <Textarea rows={5} value={form.fullPrompt} onChange={(e) => setForm({ ...form, fullPrompt: e.target.value })} />
+            <p className="text-xs text-neutral-gray">The full prompt is never shown before purchase. Buyers only see structured info in “What’s Included”.</p>
             <Label>Negative prompt</Label>
             <Textarea rows={2} value={form.negativePrompt} onChange={(e) => setForm({ ...form, negativePrompt: e.target.value })} />
             <Label>Usage notes</Label>

@@ -173,9 +173,9 @@ export interface ListingDraft {
 
 export async function createListing(draft: ListingDraft): Promise<Listing> {
   const status = draft.status === "draft" ? "draft" : "published";
-  const partial =
-    draft.partialPromptPreview?.trim() ||
-    draft.fullPrompt.slice(0, 80) + (draft.fullPrompt.length > 80 ? "..." : "");
+  // Partial prompt preview is no longer shown publicly. Persist an empty
+  // string for DB compatibility only.
+  const partial = "";
   const { data: inserted, error } = await supabase
     .from("listings")
     .insert({

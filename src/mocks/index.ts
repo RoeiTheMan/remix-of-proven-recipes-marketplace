@@ -25,29 +25,28 @@ export const creatorProfiles: CreatorProfile[] = [
 ];
 
 const models = [
-  { m: "Midjourney", v: "v6.1" },
-  { m: "Flux", v: "1.1 Pro" },
-  { m: "SDXL", v: "1.0" },
-  { m: "DALL-E", v: "3" },
-  { m: "Gemini Image", v: "2.5" },
+  { m: "gpt-image-2", v: "2" },
+  { m: "nano-banana-pro", v: "pro" },
+  { m: "nano-banana-2", v: "2" },
+  { m: "midjourney-v7", v: "v7" },
 ];
 
 const listingSeeds: Array<Partial<Listing> & { title: string; imageType: string; styleTags: string[] }> = [
-  { title: "Editorial Ceramics — Warm Studio", imageType: "Product Shot", styleTags: ["editorial", "product", "beige", "studio"] },
-  { title: "Luxury Watch Portrait — Macro", imageType: "Product Shot", styleTags: ["luxury", "macro", "product"] },
-  { title: "Sneaker Campaign — Concrete Motion", imageType: "Campaign", styleTags: ["sneaker", "campaign", "urban"] },
-  { title: "Cinematic Food Ad — Espresso Pour", imageType: "Food", styleTags: ["food", "cinematic", "moody"] },
-  { title: "Architectural Render — Coastal Villa", imageType: "Architecture", styleTags: ["architecture", "exterior", "daylight"] },
-  { title: "Fashion Campaign — Desaturated Denim", imageType: "Fashion", styleTags: ["fashion", "editorial", "muted"] },
-  { title: "Social Poster — Type-First Minimal", imageType: "Poster", styleTags: ["poster", "typography", "flat"] },
-  { title: "App Mockup — Neutral Device Frame", imageType: "Mockup", styleTags: ["mockup", "ui", "neutral"] },
-  { title: "Logo Concept — Serif Monogram", imageType: "Logo", styleTags: ["logo", "monogram", "serif"] },
-  { title: "Interior Scene — Warm Minimal Loft", imageType: "Interior", styleTags: ["interior", "warm", "minimal"] },
-  { title: "Portrait — Golden Hour Editorial", imageType: "Portrait", styleTags: ["portrait", "editorial", "golden"] },
-  { title: "Beverage Bottle — Studio Glass", imageType: "Product Shot", styleTags: ["beverage", "product", "studio"] },
-  { title: "Skincare Flatlay — Bone & Cream", imageType: "Flatlay", styleTags: ["skincare", "flatlay", "neutral"] },
-  { title: "Automotive Hero — Rain & Chrome", imageType: "Automotive", styleTags: ["auto", "cinematic", "night"] },
-  { title: "Café Menu Board — Handset Type", imageType: "Poster", styleTags: ["poster", "type", "warm"] },
+  { title: "Editorial Product Photography — Ceramic Vase", imageType: "Product", styleTags: ["editorial", "product", "minimal", "warm"] },
+  { title: "Luxury Watch Campaign — Onyx & Gold", imageType: "Product", styleTags: ["luxury", "watch", "macro"] },
+  { title: "Cinematic Sneaker Advertisement", imageType: "Product", styleTags: ["sneaker", "cinematic", "street"] },
+  { title: "Soft Studio Portrait — Editorial Beauty", imageType: "Portrait", styleTags: ["portrait", "editorial", "soft"] },
+  { title: "Architectural Visualization — Coastal Villa", imageType: "Architecture", styleTags: ["architecture", "archviz", "modern"] },
+  { title: "Fashion Editorial — Minimal Streetwear", imageType: "Fashion", styleTags: ["fashion", "editorial", "street"] },
+  { title: "Premium Food Photography — Dark & Moody", imageType: "Food", styleTags: ["food", "dark", "moody"] },
+  { title: "Mobile App Mockup — Fintech Dashboard", imageType: "Mockup", styleTags: ["mockup", "app", "fintech"] },
+  { title: "Minimal Logo Concept — Monogram", imageType: "Logo", styleTags: ["logo", "monogram", "minimal"] },
+  { title: "Travel Poster — Retro Alpine", imageType: "Illustration", styleTags: ["poster", "travel", "retro"] },
+  { title: "Automotive Campaign — Coastal Highway", imageType: "Automotive", styleTags: ["automotive", "cinematic", "dusk"] },
+  { title: "Social Media Campaign — Skincare Flatlay", imageType: "Product", styleTags: ["skincare", "flatlay", "pastel"] },
+  { title: "Interior Design Render — Warm Scandinavian", imageType: "Interior", styleTags: ["interior", "scandi", "warm"] },
+  { title: "Cosmetic Product Advertisement — Glass & Gold", imageType: "Product", styleTags: ["cosmetic", "luxury", "glass"] },
+  { title: "Fantasy Environment Concept — Twilight Forest", imageType: "Concept", styleTags: ["fantasy", "environment", "painterly"] },
 ];
 
 export const listings: Listing[] = listingSeeds.map((seed, i) => {
@@ -63,26 +62,26 @@ export const listings: Listing[] = listingSeeds.map((seed, i) => {
     modelVersion: model.v,
     aspectRatio: ["1:1", "3:2", "16:9", "4:5"][i % 4],
     imageType: seed.imageType,
-    styleTags: seed.styleTags,
+    styleTags: [...(seed.styleTags ?? []), "pickture-demo"],
     usageRights: (["personal", "commercial", "extended"] as const)[i % 3],
     priceCents: price,
-    partialPromptPreview: `${seed.imageType.toLowerCase()}, ${seed.styleTags.slice(0, 2).join(", ")}, natural light, shallow depth of field, ...`,
+    partialPromptPreview: "",
     consistencyScore: 78 + ((i * 7) % 20),
     avgRating: Number((4.2 + ((i * 3) % 8) / 10).toFixed(1)),
     ratingCount: 12 + i * 5,
     salesCount: 20 + i * 11,
     status: "published",
-    previewImages: [`ph-${(i % 6) + 1}`],
+    previewImages: [],
     createdAt: daysAgo(60 - i * 3),
   };
 });
 
 export const recipeSecrets: RecipeSecret[] = listings.map((l) => ({
   listingId: l.id,
-  fullPrompt: `${l.partialPromptPreview.replace("...", "")} shot on Hasselblad, 80mm, f/2.8, warm rim light, subtle grain, editorial composition, ${l.styleTags.join(", ")}`,
+  fullPrompt: `tested recipe for ${l.title.toLowerCase()}, ${l.styleTags.filter((t) => t !== "pickture-demo").join(", ")}, editorial composition, negative space, warm neutral palette`,
   negativePrompt: "low-res, watermark, deformed, extra fingers, oversaturated, hdr",
-  settings: { steps: 32, cfg: 6.5, sampler: "DPM++ 2M Karras", seed: 42_000 + parseInt(l.id.split("_")[1]) },
-  usageNotes: "Keep aspect ratio locked. Regenerate 3–4 variants and pick the sharpest. Avoid raising CFG above 7.",
+  settings: { aspect_ratio: l.aspectRatio, quality: "high" },
+  usageNotes: "Keep aspect ratio locked. Regenerate 3–4 variants and pick the sharpest.",
 }));
 
 export const purchases: Purchase[] = [
@@ -98,8 +97,8 @@ export const reviews: Review[] = [
 ];
 
 export const requests: CustomRequest[] = [
-  { id: "req1", buyerId: "u_buyer", title: "Skincare launch — 6 hero shots", brief: "Bone-white background, warm shadows, minimal props, consistent across 6 SKUs.", modelPreference: "Flux", budgetCents: 40000, deadline: daysAgo(-7), usageRights: "commercial", status: "open", offerCount: 2, createdAt: daysAgo(2) },
-  { id: "req2", buyerId: "u_buyer2", title: "Cinematic sneaker campaign", brief: "Moody urban, wet concrete, single figure, 3 aspect ratios.", modelPreference: "Midjourney", budgetCents: 25000, deadline: daysAgo(-10), usageRights: "commercial", status: "open", offerCount: 2, createdAt: daysAgo(1) },
+  { id: "req1", buyerId: "u_buyer", title: "Skincare launch — 6 hero shots", brief: "Bone-white background, warm shadows, minimal props, consistent across 6 SKUs.", modelPreference: "ChatGPT Images 2", budgetCents: 40000, deadline: daysAgo(-7), usageRights: "commercial", status: "open", offerCount: 2, createdAt: daysAgo(2) },
+  { id: "req2", buyerId: "u_buyer2", title: "Cinematic sneaker campaign", brief: "Moody urban, wet concrete, single figure, 3 aspect ratios.", modelPreference: "Midjourney V7", budgetCents: 25000, deadline: daysAgo(-10), usageRights: "commercial", status: "open", offerCount: 2, createdAt: daysAgo(1) },
   { id: "req3", buyerId: "u_buyer", title: "Architectural exterior — coastal", brief: "Late-afternoon light, calm ocean, no people, 16:9.", budgetCents: 18000, deadline: daysAgo(-14), usageRights: "personal", status: "open", offerCount: 1, createdAt: daysAgo(3) },
 ];
 

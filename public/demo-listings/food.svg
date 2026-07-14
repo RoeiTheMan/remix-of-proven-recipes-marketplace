@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Premium food photography">
+  <rect width="800" height="1000" fill="#1a1613"/>
+  <circle cx="400" cy="500" r="320" fill="#2a221c"/>
+  <circle cx="400" cy="500" r="240" fill="#E4DCC9" stroke="#B8AC94" stroke-width="3"/>
+  <circle cx="400" cy="500" r="150" fill="#B8AC94"/>
+  <circle cx="400" cy="500" r="60" fill="#8a6a4a"/>
+  <path d="M370 440 Q 380 420 400 430 Q 420 420 430 440" fill="#5a3a24"/>
+  <path d="M380 380 Q 400 340 420 380" stroke="#E4DCC9" stroke-width="2" fill="none" opacity=".6"/>
+  <path d="M360 370 Q 380 330 400 370" stroke="#E4DCC9" stroke-width="2" fill="none" opacity=".4"/>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#E4DCC9">FOOD · DARK &amp; MOODY</text>
+  </g>
+</svg>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Fashion editorial">
+  <rect width="800" height="1000" fill="#D9CFBB"/>
+  <rect x="0" y="0" width="400" height="1000" fill="#E4DCC9"/>
+  <circle cx="400" cy="230" r="70" fill="#B8AC94" stroke="#14100D" stroke-width="3"/>
+  <path d="M330 320 L 470 320 L 490 620 L 310 620 Z" fill="#14100D"/>
+  <rect x="340" y="620" width="40" height="260" fill="#14100D"/>
+  <rect x="420" y="620" width="40" height="260" fill="#14100D"/>
+  <path d="M330 320 L 260 500 L 280 520 L 350 380 Z" fill="#14100D"/>
+  <path d="M470 320 L 540 500 L 520 520 L 450 380 Z" fill="#14100D"/>
+  <rect x="330" y="880" width="50" height="30" fill="#14100D"/>
+  <rect x="420" y="880" width="50" height="30" fill="#14100D"/>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">FASHION · EDITORIAL</text>
+  </g>
+</svg>

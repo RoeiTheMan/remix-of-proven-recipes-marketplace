@@ -14,7 +14,7 @@ import { CheckCircle2 } from "lucide-react";
 
 type Sort = "newest" | "oldest" | "consistency" | "model";
 
-export const Route = createFileRoute("/purchases")({ component: Purchases });
+export const Route = createFileRoute("/purchases/")({ component: Purchases });
 
 function Purchases() {
   const { user, isSignedIn, loading } = useAuth();

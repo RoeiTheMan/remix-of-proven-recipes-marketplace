@@ -639,6 +639,7 @@ export type Database = {
         }
       }
       admin_dashboard_stats: { Args: never; Returns: Json }
+      admin_generate_demo_catalog: { Args: never; Returns: Json }
       admin_remove_listing: {
         Args: { _listing_id: string }
         Returns: undefined
@@ -672,6 +673,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      delete_listing_if_safe: {
+        Args: { _listing_id: string }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -692,6 +697,39 @@ export type Database = {
           _payload?: Json
         }
         Returns: string
+      }
+      set_listing_status: {
+        Args: {
+          _listing_id: string
+          _status: Database["public"]["Enums"]["listing_status"]
+        }
+        Returns: {
+          aspect_ratio: string
+          avg_rating: number
+          consistency_score: number
+          created_at: string
+          creator_id: string
+          description: string
+          id: string
+          image_type: string
+          model: string
+          model_version: string
+          partial_prompt_preview: string
+          price_cents: number
+          rating_count: number
+          sales_count: number
+          status: Database["public"]["Enums"]["listing_status"]
+          style_tags: string[]
+          title: string
+          updated_at: string
+          usage_rights: Database["public"]["Enums"]["usage_rights"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "listings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       simulate_purchase: {
         Args: { _listing_id: string }

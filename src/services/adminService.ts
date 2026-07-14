@@ -102,3 +102,12 @@ export async function getAllListings() {
   if (error) throw error;
   return (data ?? []).map((r) => mapListingRow(r));
 }
+
+// Admin-only demo catalog generator. RPC enforces admin + creator profile.
+export async function generateDemoCatalog(): Promise<{ created: number; skipped: number }> {
+  const { data, error } = await supabase.rpc("admin_generate_demo_catalog");
+  if (error) throw error;
+  const d = (data ?? {}) as { created?: number; skipped?: number };
+  return { created: d.created ?? 0, skipped: d.skipped ?? 0 };
+}
+

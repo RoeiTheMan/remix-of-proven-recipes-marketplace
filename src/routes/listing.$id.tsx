@@ -48,9 +48,13 @@ function ListingDetail() {
     <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-7">
         <ImagePlaceholder id={listing.previewImages[0]} label={listing.imageType} ratio="aspect-[4/5]" />
-        <div className="grid grid-cols-4 gap-2 mt-2">
-          {[1, 2, 3, 4].map((i) => <ImagePlaceholder key={i} id={`ph-${((i + parseInt(id.replace(/\D/g, "")) || 1) % 6) + 1}`} ratio="aspect-square" />)}
-        </div>
+        {listing.previewImages.length > 1 && (
+          <div className="grid grid-cols-4 gap-2 mt-2">
+            {listing.previewImages.slice(1, 5).map((src, i) => (
+              <ImagePlaceholder key={i} id={src} ratio="aspect-square" />
+            ))}
+          </div>
+        )}
       </div>
 
       <div className="lg:col-span-5">

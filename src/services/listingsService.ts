@@ -247,7 +247,7 @@ export async function updateListing(id: string, patch: Partial<ListingDraft>): P
     updated = data;
   }
 
-  const secretPatch: Record<string, unknown> = {};
+  const secretPatch: Partial<{ full_prompt: string; negative_prompt: string; settings: Record<string, string | number>; usage_notes: string }> = {};
   if (patch.fullPrompt !== undefined) secretPatch.full_prompt = patch.fullPrompt;
   if (patch.negativePrompt !== undefined) secretPatch.negative_prompt = patch.negativePrompt;
   if (patch.settings !== undefined) secretPatch.settings = patch.settings;

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Interior design render">
+  <rect width="800" height="1000" fill="#F5EFE4"/>
+  <rect y="700" width="800" height="300" fill="#B8AC94"/>
+  <g stroke="#14100D" stroke-width="1" opacity=".5">
+    <line x1="0" y1="720" x2="800" y2="720"/>
+    <line x1="0" y1="800" x2="800" y2="800"/>
+    <line x1="0" y1="880" x2="800" y2="880"/>
+  </g>
+  <rect x="80" y="120" width="240" height="500" fill="#E4DCC9" stroke="#14100D" stroke-width="3"/>
+  <line x1="200" y1="120" x2="200" y2="620" stroke="#14100D" stroke-width="2"/>
+  <line x1="80" y1="360" x2="320" y2="360" stroke="#14100D" stroke-width="2"/>
+  <rect x="380" y="500" width="360" height="140" rx="10" fill="#D9CFBB" stroke="#14100D" stroke-width="3"/>
+  <rect x="380" y="500" width="360" height="60" rx="10" fill="#E4DCC9" stroke="#14100D" stroke-width="3"/>
+  <rect x="600" y="380" width="80" height="120" fill="#14100D"/>
+  <circle cx="640" cy="380" r="20" fill="#B8AC94"/>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">INTERIOR · SCANDI RENDER</text>
+  </g>
+</svg>

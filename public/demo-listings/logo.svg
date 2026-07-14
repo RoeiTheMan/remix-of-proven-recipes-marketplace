@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Minimal logo concept">
+  <rect width="800" height="1000" fill="#F5EFE4"/>
+  <g transform="translate(400 500)" fill="none" stroke="#14100D" stroke-width="6">
+    <path d="M-140 -100 L -140 100 M -140 -100 L -40 -100 Q 10 -100 10 -50 Q 10 0 -40 0 L -140 0"/>
+    <path d="M40 100 L 40 -100 L 140 -100 M 40 0 L 120 0 M 40 100 L 140 100"/>
+  </g>
+  <line x1="200" y1="720" x2="600" y2="720" stroke="#14100D" stroke-width="1"/>
+  <text x="400" y="770" text-anchor="middle" font-family="Inter, sans-serif" font-size="14" letter-spacing="6" fill="#14100D">MONOGRAM · SERIF</text>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">IDENTITY · LOGO CONCEPT</text>
+  </g>
+</svg>

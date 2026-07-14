@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Cosmetic product advertisement">
+  <rect width="800" height="1000" fill="#E4DCC9"/>
+  <ellipse cx="400" cy="820" rx="200" ry="18" fill="#B8AC94" opacity=".5"/>
+  <rect x="340" y="240" width="120" height="60" fill="#B8AC94" stroke="#14100D" stroke-width="3"/>
+  <rect x="330" y="300" width="140" height="500" rx="16" fill="#F5EFE4" stroke="#14100D" stroke-width="3"/>
+  <rect x="360" y="480" width="80" height="120" fill="none" stroke="#14100D" stroke-width="2"/>
+  <text x="400" y="550" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#14100D">SERUM</text>
+  <path d="M480 380 Q 560 350 620 400 Q 660 460 600 500" stroke="#B8AC94" stroke-width="4" fill="none"/>
+  <circle cx="620" cy="380" r="8" fill="#B8AC94"/>
+  <circle cx="640" cy="420" r="5" fill="#B8AC94"/>
+  <g transform="translate(60 60)">
+    <text x="0" y="14" font-family="Inter, sans-serif" font-size="11" letter-spacing="2" fill="#14100D">COSMETIC · HERO AD</text>
+  </g>
+</svg>

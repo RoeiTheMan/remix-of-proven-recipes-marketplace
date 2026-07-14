@@ -34,10 +34,23 @@ function AdminOverview() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <span className="label-eyebrow">Overview</span>
-        <h1 className="font-display text-4xl mt-2">Marketplace health</h1>
+      <div className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <span className="label-eyebrow">Overview</span>
+          <h1 className="font-display text-4xl mt-2">Marketplace health</h1>
+        </div>
+        {isAdmin && isCreator && (
+          <Button variant="signal" onClick={() => gen.mutate()} disabled={gen.isPending}>
+            <Sparkles className="h-4 w-4" />
+            {gen.isPending ? "Generating…" : "Generate Demo Catalog"}
+          </Button>
+        )}
       </div>
+      {isAdmin && !isCreator && (
+        <p className="text-xs text-neutral-gray border border-dashed border-border p-3">
+          To generate demo listings under your account, first complete creator onboarding from the Creator dashboard.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Active creators" value={data.activeCreators} />

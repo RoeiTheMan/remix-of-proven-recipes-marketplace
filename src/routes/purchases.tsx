@@ -85,38 +85,14 @@ function Purchases() {
       ) : (
         <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {items.map(({ purchase, listing, reviewed }) => (
-            <Link
+            <PurchaseCard
               key={purchase.id}
-              to="/purchases/$id"
-              params={{ id: purchase.id }}
-              className="border border-border bg-card block hover:border-ink"
-            >
-              <ImagePlaceholder id={getDemoListingArtwork(listing)} label={listing.imageType} ratio="aspect-[4/5]" />
-              <div className="p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <ConsistencyBadge score={listing.consistencyScore} />
-                  {reviewed ? (
-                    <span className="inline-flex items-center gap-1 text-[11px] uppercase tracking-wider text-teal border border-teal px-1.5 py-0.5">
-                      <CheckCircle2 className="h-3 w-3" /> Reviewed
-                    </span>
-                  ) : (
-                    <span className="text-[11px] uppercase tracking-wider text-signal border border-signal px-1.5 py-0.5">
-                      Review this recipe
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-display text-lg leading-tight line-clamp-2">{listing.title}</h3>
-                {listing.creator && <CreatorInline creator={listing.creator} />}
-                <div className="flex items-center justify-between text-xs text-neutral-gray pt-2 border-t border-border">
-                  <span>{modelLabel(listing.model)} · {listing.modelVersion}</span>
-                  <span className="font-mono text-ink">${(purchase.priceCents / 100).toFixed(2)}</span>
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-neutral-gray">
-                  <span className="capitalize">{listing.usageRights} rights</span>
-                  <span>{new Date(purchase.purchasedAt).toLocaleDateString()}</span>
-                </div>
-              </div>
-            </Link>
+              purchaseId={purchase.id}
+              listing={listing}
+              purchasedAt={purchase.purchasedAt}
+              priceCents={purchase.priceCents}
+              reviewed={reviewed}
+            />
           ))}
         </div>
       )}

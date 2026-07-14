@@ -69,6 +69,11 @@ function Creator() {
     queryFn: () => (user ? getListingsByCreator(user.id) : Promise.resolve([])),
     enabled: !!user && isCreator,
   });
+  const { data: recentSales = [] } = useQuery({
+    queryKey: ["creator-sales", user?.id],
+    queryFn: () => (user ? getCreatorRecentSales(user.id, 20) : Promise.resolve([])),
+    enabled: !!user && isCreator,
+  });
 
   if (loading) return <div className="max-w-3xl mx-auto px-6 py-16 text-neutral-gray">Loading…</div>;
 
@@ -87,10 +92,15 @@ function Creator() {
 
   const published = listings.filter((l) => l.status === "published");
   const drafts = listings.filter((l) => l.status === "draft");
-  const sales = published.reduce((s, l) => s + l.salesCount, 0);
-  const revenue = published.reduce((s, l) => s + l.salesCount * l.priceCents, 0);
+  // Revenue and sales snapshot from the purchases table (not listing counters).
+  const sales = recentSales.length; // recent window; DB total shown below when >=20
+  const revenue = recentSales.reduce((s, r) => s + r.purchase.priceCents, 0);
+  const totalSalesFromListings = published.reduce((s, l) => s + l.salesCount, 0);
   const rated = published.filter((l) => l.ratingCount > 0);
-  const avgRating = rated.length ? rated.reduce((s, l) => s + l.avgRating, 0) / rated.length : 0;
+  const totalReviews = published.reduce((s, l) => s + l.ratingCount, 0);
+  const avgRating = totalReviews
+    ? published.reduce((s, l) => s + l.avgRating * l.ratingCount, 0) / totalReviews
+    : 0;
   const avgConsistency = published.length ? Math.round(published.reduce((s, l) => s + l.consistencyScore, 0) / published.length) : 0;
 
   return (
@@ -99,6 +109,9 @@ function Creator() {
         <div>
           <span className="label-eyebrow">Creator dashboard</span>
           <h1 className="font-display text-4xl mt-2">{user?.displayName}</h1>
+          <p className="text-xs text-neutral-gray mt-1">
+            Public profile: <Link to="/creator-profile/$creatorId" params={{ creatorId: user!.id }} className="underline">View as buyer</Link>
+          </p>
         </div>
         <ListingEditorDialog onSaved={() => qc.invalidateQueries()} />
       </div>
@@ -106,11 +119,45 @@ function Creator() {
       <div className="mt-8 grid grid-cols-2 md:grid-cols-6 gap-4">
         <StatCard label="Published" value={published.length} />
         <StatCard label="Drafts" value={drafts.length} />
-        <StatCard label="Sales" value={sales} />
+        <StatCard label="Sales" value={totalSalesFromListings} />
         <StatCard label="Revenue" value={`$${(revenue / 100).toFixed(0)}`} accent="signal" />
         <StatCard label="Avg rating" value={rated.length ? avgRating.toFixed(2) : "—"} />
         <StatCard label="Avg consistency" value={published.length ? avgConsistency : "—"} accent="teal" />
       </div>
+
+      <div className="mt-10 border border-border bg-card">
+        <div className="border-b border-border px-4 py-2 label-eyebrow flex items-center justify-between">
+          <span>Recent sales</span>
+          <span className="text-neutral-gray normal-case tracking-normal">{recentSales.length}{recentSales.length >= 20 ? "+" : ""} recent</span>
+        </div>
+        {recentSales.length === 0 ? (
+          <div className="p-8 text-center text-sm text-neutral-gray">
+            No sales yet. Once buyers purchase your recipes, they will appear here.
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Recipe</TableHead>
+                <TableHead>Buyer</TableHead>
+                <TableHead className="text-right">Price paid</TableHead>
+                <TableHead className="text-right">Date</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentSales.map(({ purchase, listing, buyerDisplayName }) => (
+                <TableRow key={purchase.id}>
+                  <TableCell className="max-w-xs truncate">{listing.title}</TableCell>
+                  <TableCell className="text-neutral-gray">{buyerDisplayName}</TableCell>
+                  <TableCell className="text-right font-mono">${(purchase.priceCents / 100).toFixed(2)}</TableCell>
+                  <TableCell className="text-right text-neutral-gray">{new Date(purchase.purchasedAt).toLocaleDateString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+      </div>
+
 
       <div className="mt-10 border border-border bg-card">
         <div className="border-b border-border px-4 py-2 label-eyebrow flex items-center justify-between">

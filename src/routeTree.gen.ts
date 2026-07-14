@@ -10,13 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as RequestsRouteImport } from './routes/requests'
-import { Route as PurchasesRouteImport } from './routes/purchases'
 import { Route as CreatorRouteImport } from './routes/creator'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PurchasesIndexRouteImport } from './routes/purchases.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as RequestsNewRouteImport } from './routes/requests.new'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
@@ -31,11 +31,6 @@ import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
 const RequestsRoute = RequestsRouteImport.update({
   id: '/requests',
   path: '/requests',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PurchasesRoute = PurchasesRouteImport.update({
-  id: '/purchases',
-  path: '/purchases',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreatorRoute = CreatorRouteImport.update({
@@ -68,6 +63,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PurchasesIndexRoute = PurchasesIndexRouteImport.update({
+  id: '/purchases/',
+  path: '/purchases/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -84,9 +84,9 @@ const RequestsIdRoute = RequestsIdRouteImport.update({
   getParentRoute: () => RequestsRoute,
 } as any)
 const PurchasesIdRoute = PurchasesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => PurchasesRoute,
+  id: '/purchases/$id',
+  path: '/purchases/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ListingIdRoute = ListingIdRouteImport.update({
   id: '/listing/$id',
@@ -126,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/purchases': typeof PurchasesRouteWithChildren
   '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
@@ -138,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/requests/$id': typeof RequestsIdRoute
   '/requests/new': typeof RequestsNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/purchases/': typeof PurchasesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,7 +145,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/purchases': typeof PurchasesRouteWithChildren
   '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
@@ -157,6 +156,7 @@ export interface FileRoutesByTo {
   '/requests/$id': typeof RequestsIdRoute
   '/requests/new': typeof RequestsNewRoute
   '/admin': typeof AdminIndexRoute
+  '/purchases': typeof PurchasesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,7 +166,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/purchases': typeof PurchasesRouteWithChildren
   '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
@@ -178,6 +177,7 @@ export interface FileRoutesById {
   '/requests/$id': typeof RequestsIdRoute
   '/requests/new': typeof RequestsNewRoute
   '/admin/': typeof AdminIndexRoute
+  '/purchases/': typeof PurchasesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,7 +188,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/purchases'
     | '/requests'
     | '/admin/creators'
     | '/admin/listings'
@@ -200,6 +199,7 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/admin/'
+    | '/purchases/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,7 +207,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/purchases'
     | '/requests'
     | '/admin/creators'
     | '/admin/listings'
@@ -219,6 +218,7 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/admin'
+    | '/purchases'
   id:
     | '__root__'
     | '/'
@@ -227,7 +227,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/purchases'
     | '/requests'
     | '/admin/creators'
     | '/admin/listings'
@@ -239,6 +238,7 @@ export interface FileRouteTypes {
     | '/requests/$id'
     | '/requests/new'
     | '/admin/'
+    | '/purchases/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,10 +248,11 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   CreatorRoute: typeof CreatorRoute
-  PurchasesRoute: typeof PurchasesRouteWithChildren
   RequestsRoute: typeof RequestsRouteWithChildren
   CreatorProfileCreatorIdRoute: typeof CreatorProfileCreatorIdRoute
   ListingIdRoute: typeof ListingIdRoute
+  PurchasesIdRoute: typeof PurchasesIdRoute
+  PurchasesIndexRoute: typeof PurchasesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -261,13 +262,6 @@ declare module '@tanstack/react-router' {
       path: '/requests'
       fullPath: '/requests'
       preLoaderRoute: typeof RequestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/purchases': {
-      id: '/purchases'
-      path: '/purchases'
-      fullPath: '/purchases'
-      preLoaderRoute: typeof PurchasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/creator': {
@@ -312,6 +306,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/purchases/': {
+      id: '/purchases/'
+      path: '/purchases'
+      fullPath: '/purchases/'
+      preLoaderRoute: typeof PurchasesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/': {
       id: '/admin/'
       path: '/'
@@ -335,10 +336,10 @@ declare module '@tanstack/react-router' {
     }
     '/purchases/$id': {
       id: '/purchases/$id'
-      path: '/$id'
+      path: '/purchases/$id'
       fullPath: '/purchases/$id'
       preLoaderRoute: typeof PurchasesIdRouteImport
-      parentRoute: typeof PurchasesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/listing/$id': {
       id: '/listing/$id'
@@ -403,18 +404,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface PurchasesRouteChildren {
-  PurchasesIdRoute: typeof PurchasesIdRoute
-}
-
-const PurchasesRouteChildren: PurchasesRouteChildren = {
-  PurchasesIdRoute: PurchasesIdRoute,
-}
-
-const PurchasesRouteWithChildren = PurchasesRoute._addFileChildren(
-  PurchasesRouteChildren,
-)
-
 interface RequestsRouteChildren {
   RequestsIdRoute: typeof RequestsIdRoute
   RequestsNewRoute: typeof RequestsNewRoute
@@ -436,10 +425,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   CreatorRoute: CreatorRoute,
-  PurchasesRoute: PurchasesRouteWithChildren,
   RequestsRoute: RequestsRouteWithChildren,
   CreatorProfileCreatorIdRoute: CreatorProfileCreatorIdRoute,
   ListingIdRoute: ListingIdRoute,
+  PurchasesIdRoute: PurchasesIdRoute,
+  PurchasesIndexRoute: PurchasesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

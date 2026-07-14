@@ -1,9 +1,9 @@
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import type { ListingFilters, ListingSort } from "@/services/listingsService";
+import { SUPPORTED_MODELS } from "@/lib/models";
 
-const MODELS = ["Midjourney", "Flux", "SDXL", "DALL-E", "Gemini Image"];
-const TYPES = ["Product Shot", "Campaign", "Food", "Architecture", "Fashion", "Poster", "Mockup", "Logo", "Interior", "Portrait", "Flatlay", "Automotive"];
+const TYPES = ["Product", "Portrait", "Architecture", "Fashion", "Food", "Mockup", "Logo", "Interior", "Automotive", "Illustration", "Concept"];
 const RIGHTS = ["personal", "commercial", "extended"] as const;
 
 export function FilterBar({
@@ -21,7 +21,7 @@ export function FilterBar({
         <SelectTrigger><SelectValue placeholder="Model" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All models</SelectItem>
-          {MODELS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+          {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.label}>{m.label}</SelectItem>)}
         </SelectContent>
       </Select>
       <Select value={filters.imageType ?? "all"} onValueChange={(v) => onChange({ ...filters, imageType: v === "all" ? undefined : v })}>

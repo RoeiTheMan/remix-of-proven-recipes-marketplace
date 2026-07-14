@@ -22,6 +22,7 @@ import { Route as RequestsNewRouteImport } from './routes/requests.new'
 import { Route as RequestsIdRouteImport } from './routes/requests.$id'
 import { Route as PurchasesIdRouteImport } from './routes/purchases.$id'
 import { Route as ListingIdRouteImport } from './routes/listing.$id'
+import { Route as CreatorProfileCreatorIdRouteImport } from './routes/creator-profile.$creatorId'
 import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminListingsRouteImport } from './routes/admin.listings'
@@ -92,6 +93,11 @@ const ListingIdRoute = ListingIdRouteImport.update({
   path: '/listing/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorProfileCreatorIdRoute = CreatorProfileCreatorIdRouteImport.update({
+  id: '/creator-profile/$creatorId',
+  path: '/creator-profile/$creatorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/creator-profile/$creatorId': typeof CreatorProfileCreatorIdRoute
   '/listing/$id': typeof ListingIdRoute
   '/purchases/$id': typeof PurchasesIdRoute
   '/requests/$id': typeof RequestsIdRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/creator-profile/$creatorId': typeof CreatorProfileCreatorIdRoute
   '/listing/$id': typeof ListingIdRoute
   '/purchases/$id': typeof PurchasesIdRoute
   '/requests/$id': typeof RequestsIdRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/creator-profile/$creatorId': typeof CreatorProfileCreatorIdRoute
   '/listing/$id': typeof ListingIdRoute
   '/purchases/$id': typeof PurchasesIdRoute
   '/requests/$id': typeof RequestsIdRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/admin/listings'
     | '/admin/logs'
     | '/admin/reports'
+    | '/creator-profile/$creatorId'
     | '/listing/$id'
     | '/purchases/$id'
     | '/requests/$id'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/admin/listings'
     | '/admin/logs'
     | '/admin/reports'
+    | '/creator-profile/$creatorId'
     | '/listing/$id'
     | '/purchases/$id'
     | '/requests/$id'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/admin/listings'
     | '/admin/logs'
     | '/admin/reports'
+    | '/creator-profile/$creatorId'
     | '/listing/$id'
     | '/purchases/$id'
     | '/requests/$id'
@@ -238,6 +250,7 @@ export interface RootRouteChildren {
   CreatorRoute: typeof CreatorRoute
   PurchasesRoute: typeof PurchasesRouteWithChildren
   RequestsRoute: typeof RequestsRouteWithChildren
+  CreatorProfileCreatorIdRoute: typeof CreatorProfileCreatorIdRoute
   ListingIdRoute: typeof ListingIdRoute
 }
 
@@ -334,6 +347,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creator-profile/$creatorId': {
+      id: '/creator-profile/$creatorId'
+      path: '/creator-profile/$creatorId'
+      fullPath: '/creator-profile/$creatorId'
+      preLoaderRoute: typeof CreatorProfileCreatorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/reports': {
       id: '/admin/reports'
       path: '/reports'
@@ -418,18 +438,9 @@ const rootRouteChildren: RootRouteChildren = {
   CreatorRoute: CreatorRoute,
   PurchasesRoute: PurchasesRouteWithChildren,
   RequestsRoute: RequestsRouteWithChildren,
+  CreatorProfileCreatorIdRoute: CreatorProfileCreatorIdRoute,
   ListingIdRoute: ListingIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

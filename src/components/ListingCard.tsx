@@ -4,6 +4,7 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { ReviewStars } from "./ReviewStars";
 import { Button } from "./ui/button";
+import { CreatorInline } from "./CreatorInline";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 import { modelLabel } from "@/lib/models";
 
@@ -21,6 +22,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
         <Link to="/listing/$id" params={{ id: listing.id }} className="block">
           <h3 className="font-display text-lg leading-tight text-ink line-clamp-2">{listing.title}</h3>
         </Link>
+        {listing.creator && <CreatorInline creator={listing.creator} size="sm" />}
         <div className="text-xs text-neutral-gray">
           {modelLabel(listing.model)} · {listing.aspectRatio}
         </div>
@@ -29,7 +31,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <span className="font-mono text-sm text-ink">${(listing.priceCents / 100).toFixed(2)}</span>
         </div>
         <Button asChild variant="signal" size="sm" className="w-full">
-          <Link to="/listing/$id" params={{ id: listing.id }}>Buy Recipe</Link>
+          <Link to="/listing/$id" params={{ id: listing.id }}>View Recipe</Link>
         </Button>
       </div>
     </article>

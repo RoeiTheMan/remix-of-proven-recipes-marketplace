@@ -4,12 +4,13 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { ReviewStars } from "./ReviewStars";
 import { Button } from "./ui/button";
+import { getDemoListingArtwork } from "@/lib/demoArtwork";
 
 export function ListingCard({ listing }: { listing: Listing }) {
   return (
     <article className="group flex flex-col border border-border bg-card hover:border-ink transition-colors">
       <Link to="/listing/$id" params={{ id: listing.id }} className="block">
-        <ImagePlaceholder id={listing.previewImages[0]} label={listing.imageType} />
+        <ImagePlaceholder id={getDemoListingArtwork(listing)} label={listing.imageType} ratio="aspect-[4/5]" />
       </Link>
       <div className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-center justify-between gap-2">

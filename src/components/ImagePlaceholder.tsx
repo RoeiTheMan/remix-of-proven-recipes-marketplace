@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { getGenericFallbackUrl } from "@/lib/demoArtwork";
 
 const palette = [
   "from-[#e9e3d8] to-[#c9c0b1]",
@@ -10,17 +11,18 @@ const palette = [
   "from-[#e6e0d1] to-[#b5ac97]",
 ];
 
-// Renders a signed image URL when the string looks like a URL; otherwise
-// falls back to the Pickture editorial gradient placeholder.
+// Renders any http(s) URL or absolute path (e.g. /demo-listings/foo.svg) as a
+// real image. Falls back to the Pickture generic fallback SVG (never a
+// blank beige block) if the image errors.
 export function ImagePlaceholder({
   id = "ph-1",
   label,
   className,
   ratio = "aspect-[4/5]",
-}: { id?: string; label?: string; className?: string; ratio?: string }) {
+  fit = "cover",
+}: { id?: string; label?: string; className?: string; ratio?: string; fit?: "cover" | "contain" }) {
   const [errored, setErrored] = useState(false);
-  const isUrl = typeof id === "string" && /^https?:\/\//i.test(id);
-  const n = Math.max(0, (parseInt((id || "1").replace(/\D/g, "")) || 1) - 1) % palette.length;
+  const isUrl = typeof id === "string" && /^(https?:\/\/|\/)/i.test(id);
 
   if (isUrl && !errored) {
     return (
@@ -29,11 +31,14 @@ export function ImagePlaceholder({
           src={id}
           alt={label ?? "Verified visual"}
           onError={() => setErrored(true)}
-          className="absolute inset-0 h-full w-full object-cover"
+          className={cn(
+            "absolute inset-0 h-full w-full",
+            fit === "contain" ? "object-contain" : "object-cover",
+          )}
           loading="lazy"
         />
         {label && (
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/30 to-transparent p-3">
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/25 to-transparent p-3">
             <span className="label-eyebrow text-white/90">{label}</span>
           </div>
         )}
@@ -41,6 +46,16 @@ export function ImagePlaceholder({
     );
   }
 
+  if (isUrl && errored) {
+    // Real image failed — swap to the branded fallback SVG rather than a blank block.
+    return (
+      <div className={cn("w-full overflow-hidden bg-secondary border border-border relative", ratio, className)}>
+        <img src={getGenericFallbackUrl()} alt={label ?? "Preview coming soon"} className="absolute inset-0 h-full w-full object-cover" />
+      </div>
+    );
+  }
+
+  const n = Math.max(0, (parseInt((id || "1").replace(/\D/g, "")) || 1) - 1) % palette.length;
   return (
     <div
       className={cn(

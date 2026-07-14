@@ -3,13 +3,14 @@ import type { AdvisorResult } from "@/services/advisorService";
 import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { Button } from "./ui/button";
+import { getDemoListingArtwork } from "@/lib/demoArtwork";
 
 export function MatchResultCard({ result }: { result: AdvisorResult }) {
   const { listing, matchPct, rationale } = result;
   return (
     <div className="flex gap-4 border border-border bg-card p-4">
-      <div className="w-32 shrink-0">
-        <ImagePlaceholder id={listing.previewImages[0]} label={listing.imageType} ratio="aspect-square" />
+      <div className="w-40 shrink-0">
+        <ImagePlaceholder id={getDemoListingArtwork(listing)} label={listing.imageType} ratio="aspect-[4/5]" />
       </div>
       <div className="flex-1 flex flex-col gap-2 min-w-0">
         <div className="flex items-center gap-3">

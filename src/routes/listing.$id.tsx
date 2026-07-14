@@ -163,7 +163,7 @@ function IncludedPanel({ listing, purchased, secret }: IncludedPanelProps) {
   const items = [
     "Full generation prompt",
     "Negative prompt",
-    `Model and version — ${listing.model} ${listing.modelVersion}`,
+    `Model and version — ${modelLabelSafe(listing.model)} ${listing.modelVersion}`,
     "Recommended settings",
     `Aspect ratio — ${listing.aspectRatio}`,
     "Usage notes",

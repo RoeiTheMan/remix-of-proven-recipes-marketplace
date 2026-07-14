@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { AdvisorResult } from "@/services/advisorService";
 import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
+import { CreatorInline } from "./CreatorInline";
 import { Button } from "./ui/button";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 import { modelLabel } from "@/lib/models";
@@ -23,6 +24,7 @@ export function MatchResultCard({ result }: { result: AdvisorResult }) {
           <span className="label-eyebrow">{modelLabel(listing.model)}</span>
         </div>
         <h3 className="font-display text-lg leading-tight">{listing.title}</h3>
+        {listing.creator && <CreatorInline creator={listing.creator} />}
         <p className="text-sm text-neutral-gray">{rationale}</p>
         <div className="flex items-center justify-between mt-auto pt-2 border-t border-border">
           <span className="text-xs text-neutral-gray uppercase tracking-wider">{listing.usageRights} · ${(listing.priceCents / 100).toFixed(2)}</span>

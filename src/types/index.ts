@@ -41,6 +41,15 @@ export interface CreatorProfile {
   suspended: boolean;
 }
 
+export interface CreatorSummary {
+  id: string;
+  displayName: string;
+  avatarUrl?: string;
+  reliabilityScore: number;
+  suspended: boolean;
+  tagline?: string;
+}
+
 export interface Listing {
   id: string;
   creatorId: string;
@@ -61,6 +70,7 @@ export interface Listing {
   status: ListingStatus;
   previewImages: string[]; // placeholder ids
   createdAt: string;
+  creator?: CreatorSummary;
 }
 
 export interface RecipeSecret {

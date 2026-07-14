@@ -4,6 +4,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Listing, ListingStatus, RecipeSecret } from "@/types";
 import { mapListingRow, mapRecipeSecretRow } from "./_mappers";
+import { getCreatorSummaries } from "./creatorsService";
 import * as seeds from "@/mocks";
 
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
@@ -117,8 +118,14 @@ export async function getListings(filters: ListingFilters = {}, sort: ListingSor
   if (!data || data.length === 0) {
     items = seeds.listings.filter((l) => l.status === "published");
   } else {
-    const imgs = await fetchImageUrlsByListing(data.map((r) => r.id));
-    items = data.map((r) => mapListingRow(r, imgs[r.id] ?? []));
+    const [imgs, creators] = await Promise.all([
+      fetchImageUrlsByListing(data.map((r) => r.id)),
+      getCreatorSummaries(data.map((r) => r.creator_id)),
+    ]);
+    items = data
+      .map((r) => ({ ...mapListingRow(r, imgs[r.id] ?? []), creator: creators[r.creator_id] }))
+      // Hide listings whose creator is suspended (defence in depth vs RLS).
+      .filter((l) => !l.creator?.suspended);
   }
 
   const filtered = applyClientFilters(items, filters, sort);
@@ -133,14 +140,17 @@ export async function getListing(id: string) {
     const secret = mock ? (seeds.recipeSecrets.find((r) => r.listingId === id) ?? null) : null;
     return { listing: mock, secret };
   }
-  const imgs = await fetchImageUrlsByListing([id]);
+  const [imgs, creators] = await Promise.all([
+    fetchImageUrlsByListing([id]),
+    getCreatorSummaries([listing.creator_id]),
+  ]);
   const { data: secretRow } = await supabase
     .from("recipe_secrets")
     .select("*")
     .eq("listing_id", id)
     .maybeSingle();
   return {
-    listing: mapListingRow(listing, imgs[id] ?? []),
+    listing: { ...mapListingRow(listing, imgs[id] ?? []), creator: creators[listing.creator_id] },
     secret: secretRow ? mapRecipeSecretRow(secretRow) : null,
   };
 }

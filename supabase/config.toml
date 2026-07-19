@@ -1,1 +1,6 @@
 project_id = "wvvklhszudwlsmplngcg"
+
+# The Advisor is a public marketplace page. The function applies its own
+# validation and best-effort rate limit, and only reads published listings.
+[functions.advisor-recommend]
+verify_jwt = false

@@ -198,6 +198,14 @@ function ListingRow({ listing, onChanged }: { listing: Listing; onChanged: () =>
     setBusy(true);
     try {
       const next = listing.status === "published" ? "draft" : "published";
+      if (next === "published") {
+        const images = await getListingImages(listing.id);
+        if (images.length === 0) {
+          toast.error("Add at least one preview image before publishing.");
+          setImgOpen(true);
+          return;
+        }
+      }
       await setListingStatus(listing.id, next);
       toast.success(next === "published" ? "Listing published" : "Moved to draft");
       onChanged();
@@ -279,13 +287,30 @@ function ListingEditorDialog({
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<DraftForm>(EMPTY_FORM);
   const [busy, setBusy] = useState(false);
+  const [existingImages, setExistingImages] = useState<ListingImageRow[]>([]);
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
+  const [pendingCoverIndex, setPendingCoverIndex] = useState<number | null>(null);
+  const [imagesLoading, setImagesLoading] = useState(false);
 
   // Load existing values when editing.
   useEffect(() => {
     if (!open) return;
-    if (!editing) { setForm(EMPTY_FORM); setStep(1); return; }
+    setPendingImages([]);
+    setPendingCoverIndex(null);
+    if (!editing) {
+      setForm(EMPTY_FORM);
+      setExistingImages([]);
+      setImagesLoading(false);
+      setStep(1);
+      return;
+    }
     (async () => {
-      const secret = await getRecipeSecret(editing.id);
+      setImagesLoading(true);
+      const [secret, images] = await Promise.all([
+        getRecipeSecret(editing.id),
+        getListingImages(editing.id),
+      ]);
+      setExistingImages(images);
       setForm({
         title: editing.title,
         description: editing.description,
@@ -306,8 +331,43 @@ function ListingEditorDialog({
         ),
       });
       setStep(1);
-    })();
+      setImagesLoading(false);
+    })().catch((error) => {
+      setImagesLoading(false);
+      toast.error(error instanceof Error ? error.message : "Could not load listing");
+    });
   }, [open, editing]);
+
+  function addImages(fileList: FileList | null) {
+    if (!fileList) return;
+    const accepted: File[] = [];
+    for (const file of Array.from(fileList)) {
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        toast.error(`${file.name} must be a JPG, PNG, or WebP image`);
+      } else if (file.size > 8 * 1024 * 1024) {
+        toast.error(`${file.name} is over 8MB`);
+      } else {
+        accepted.push(file);
+      }
+    }
+    if (accepted.length === 0) return;
+    if (pendingImages.length === 0 && existingImages.length === 0) setPendingCoverIndex(0);
+    setPendingImages((current) => [...current, ...accepted]);
+  }
+
+  function removePendingImage(index: number) {
+    setPendingImages((current) => current.filter((_, i) => i !== index));
+    setPendingCoverIndex((cover) => {
+      if (cover === null) return null;
+      if (cover === index) return existingImages.length === 0 && pendingImages.length > 1 ? 0 : null;
+      return cover > index ? cover - 1 : cover;
+    });
+  }
+
+  function markExistingCover(imageId: string) {
+    setExistingImages((current) => current.map((image) => ({ ...image, isCover: image.id === imageId })));
+    setPendingCoverIndex(null);
+  }
 
   async function submit(status: "draft" | "published") {
     if (!user) return;
@@ -315,7 +375,13 @@ function ListingEditorDialog({
       toast.error("Title and full prompt are required.");
       return;
     }
+    if (status === "published" && existingImages.length + pendingImages.length === 0) {
+      toast.error("Add at least one preview image before publishing.");
+      setStep(3);
+      return;
+    }
     setBusy(true);
+    let createdDraftId: string | null = null;
     try {
       const shared = {
         title: form.title, description: form.description,
@@ -333,16 +399,37 @@ function ListingEditorDialog({
       };
       if (editing) {
         await updateListing(editing.id, shared);
+        const uploaded: ListingImageRow[] = [];
+        for (const file of pendingImages) uploaded.push(await uploadListingImage(editing.id, file));
+        if (pendingCoverIndex !== null && uploaded[pendingCoverIndex]) {
+          await setCoverImage(uploaded[pendingCoverIndex].id);
+        } else {
+          const existingCover = existingImages.find((image) => image.isCover);
+          if (existingCover) await setCoverImage(existingCover.id);
+        }
         if (editing.status !== status) await setListingStatus(editing.id, status);
         toast.success("Listing updated");
       } else {
-        await createListing({ ...shared, creatorId: user.id, status });
+        const created = await createListing({ ...shared, creatorId: user.id, status: "draft" });
+        createdDraftId = created.id;
+        const uploaded: ListingImageRow[] = [];
+        for (const file of pendingImages) uploaded.push(await uploadListingImage(created.id, file));
+        if (pendingCoverIndex !== null && uploaded[pendingCoverIndex]) {
+          await setCoverImage(uploaded[pendingCoverIndex].id);
+        }
+        if (status === "published") await setListingStatus(created.id, "published");
         toast.success(status === "published" ? "Listing published" : "Draft saved");
       }
       setOpen(false);
       onSaved();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Save failed");
+      if (createdDraftId) {
+        toast.error("Draft saved, but uploading or publishing failed. Open it to finish setup.");
+        setOpen(false);
+        onSaved();
+      } else {
+        toast.error(e instanceof Error ? e.message : "Save failed");
+      }
     } finally { setBusy(false); }
   }
 
@@ -413,7 +500,69 @@ function ListingEditorDialog({
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>{["personal", "commercial", "extended"].map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
             </Select>
-            <p className="text-xs text-neutral-gray">Upload preview images after saving using the image manager on the listing row.</p>
+            <div className="space-y-2 pt-2">
+              <Label>Preview images</Label>
+              <label
+                className="border border-dashed border-border p-5 flex flex-col items-center gap-2 cursor-pointer hover:border-ink"
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  addImages(event.dataTransfer.files);
+                }}
+              >
+                <ImageIcon className="h-6 w-6 text-neutral-gray" />
+                <span className="text-sm font-medium">Drop images here or click to upload</span>
+                <span className="text-xs text-neutral-gray">JPG, PNG, or WebP — up to 8MB each</span>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  hidden
+                  disabled={busy}
+                  onChange={(event) => {
+                    addImages(event.target.files);
+                    event.target.value = "";
+                  }}
+                />
+              </label>
+              {imagesLoading ? (
+                <p className="text-xs text-neutral-gray">Loading existing images…</p>
+              ) : existingImages.length + pendingImages.length === 0 ? (
+                <p className="text-xs text-neutral-gray">An image is required to publish. You can still save an image-less draft.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {existingImages.map((image) => {
+                    const isSelectedCover = pendingCoverIndex === null && image.isCover;
+                    return (
+                      <div key={image.id} className="border border-border p-2 space-y-2">
+                        <div className="aspect-[4/5] overflow-hidden bg-secondary">
+                          {image.signedUrl ? <img src={image.signedUrl} alt="Existing listing preview" className="h-full w-full object-cover" /> : null}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isSelectedCover ? "outline" : "ghost"}
+                          className="w-full"
+                          disabled={isSelectedCover}
+                          onClick={() => markExistingCover(image.id)}
+                        >
+                          <Star className="h-3.5 w-3.5" /> {isSelectedCover ? "Cover" : "Set cover"}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                  {pendingImages.map((file, index) => (
+                    <PendingImagePreview
+                      key={`${file.name}-${file.lastModified}-${index}`}
+                      file={file}
+                      isCover={pendingCoverIndex === index}
+                      onSetCover={() => setPendingCoverIndex(index)}
+                      onRemove={() => removePendingImage(index)}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
         <div className="flex justify-between pt-4 border-t border-border gap-2 flex-wrap">
@@ -431,6 +580,55 @@ function ListingEditorDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function PendingImagePreview({
+  file,
+  isCover,
+  onSetCover,
+  onRemove,
+}: {
+  file: File;
+  isCover: boolean;
+  onSetCover: () => void;
+  onRemove: () => void;
+}) {
+  const [previewUrl, setPreviewUrl] = useState("");
+
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  return (
+    <div className="border border-border p-2 space-y-2">
+      <div className="aspect-[4/5] overflow-hidden bg-secondary relative">
+        {previewUrl ? <img src={previewUrl} alt={file.name} className="h-full w-full object-cover" /> : null}
+        <Button
+          type="button"
+          size="sm"
+          variant="secondary"
+          className="absolute right-1 top-1 h-7 w-7 p-0"
+          title="Remove image"
+          onClick={onRemove}
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <p className="text-[11px] text-neutral-gray truncate" title={file.name}>{file.name}</p>
+      <Button
+        type="button"
+        size="sm"
+        variant={isCover ? "outline" : "ghost"}
+        className="w-full"
+        disabled={isCover}
+        onClick={onSetCover}
+      >
+        <Star className="h-3.5 w-3.5" /> {isCover ? "Cover" : "Set cover"}
+      </Button>
+    </div>
   );
 }
 

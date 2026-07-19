@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import { getGenericFallbackUrl } from "@/lib/demoArtwork";
 
@@ -20,13 +20,21 @@ export function ImagePlaceholder({
   className,
   ratio = "aspect-[4/5]",
   fit = "cover",
-}: { id?: string; label?: string; className?: string; ratio?: string; fit?: "cover" | "contain" }) {
+  style,
+}: {
+  id?: string;
+  label?: string;
+  className?: string;
+  ratio?: string;
+  fit?: "cover" | "contain";
+  style?: CSSProperties;
+}) {
   const [errored, setErrored] = useState(false);
   const isUrl = typeof id === "string" && /^(https?:\/\/|\/)/i.test(id);
 
   if (isUrl && !errored) {
     return (
-      <div className={cn("w-full overflow-hidden bg-secondary border border-border relative", ratio, className)}>
+      <div className={cn("w-full overflow-hidden bg-secondary border border-border relative", ratio, className)} style={style}>
         <img
           src={id}
           alt={label ?? "Verified visual"}
@@ -49,7 +57,7 @@ export function ImagePlaceholder({
   if (isUrl && errored) {
     // Real image failed — swap to the branded fallback SVG rather than a blank block.
     return (
-      <div className={cn("w-full overflow-hidden bg-secondary border border-border relative", ratio, className)}>
+      <div className={cn("w-full overflow-hidden bg-secondary border border-border relative", ratio, className)} style={style}>
         <img src={getGenericFallbackUrl()} alt={label ?? "Preview coming soon"} className="absolute inset-0 h-full w-full object-cover" />
       </div>
     );
@@ -64,6 +72,7 @@ export function ImagePlaceholder({
         ratio,
         className,
       )}
+      style={style}
     >
       <div className="absolute inset-0 flex items-end p-3">
         <span className="label-eyebrow text-ink/70">{label ?? "Verified visual"}</span>

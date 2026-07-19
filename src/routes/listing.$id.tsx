@@ -88,7 +88,13 @@ function ListingDetail() {
     <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-7">
         <div className="mx-auto max-w-[520px]">
-          <ImagePlaceholder id={heroSrc} label={listing.imageType} ratio="aspect-[4/5]" />
+          <ImagePlaceholder
+            id={heroSrc}
+            label={listing.imageType}
+            ratio=""
+            fit="contain"
+            style={{ aspectRatio: listing.aspectRatio.replace(":", " / ") }}
+          />
           {thumbs.length > 0 && (
             <div className="grid grid-cols-4 gap-2 mt-2">
               {thumbs.map((src, i) => (

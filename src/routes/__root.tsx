@@ -6,6 +6,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/context/AuthContext";
 import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import { SectionHelp } from "@/components/SectionHelp";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -88,7 +89,7 @@ function RootComponent() {
       <AuthProvider>
         <div className="min-h-screen flex flex-col">
           <SiteHeader />
-          <main className="flex-1"><Outlet /></main>
+          <main className="flex-1"><SectionHelp /><Outlet /></main>
           <SiteFooter />
         </div>
         <Toaster />

@@ -174,6 +174,50 @@ export type Database = {
           },
         ]
       }
+      email_events: {
+        Row: {
+          created_at: string
+          email_type: string
+          error: string | null
+          id: string
+          provider_id: string | null
+          purchase_id: string
+          recipient_email: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          purchase_id: string
+          recipient_email: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          error?: string | null
+          id?: string
+          provider_id?: string | null
+          purchase_id?: string
+          recipient_email?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_events_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_images: {
         Row: {
           created_at: string

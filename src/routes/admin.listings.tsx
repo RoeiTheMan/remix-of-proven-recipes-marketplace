@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
-import { modelLabel } from "@/lib/models";
+import { modelDisplayName } from "@/lib/models";
 
 export const Route = createFileRoute("/admin/listings")({ component: AdminListings });
 
@@ -40,7 +40,7 @@ function AdminListings() {
                     <span className="truncate max-w-[320px]">{l.title}</span>
                   </div>
                 </TableCell>
-                <TableCell>{modelLabel(l.model)} {l.modelVersion}</TableCell>
+                <TableCell>{modelDisplayName(l.model, l.modelVersion)}</TableCell>
                 <TableCell className="label-eyebrow">{l.status}</TableCell>
                 <TableCell className="text-right">{l.avgRating.toFixed(1)}</TableCell>
                 <TableCell className="text-right text-teal">{l.consistencyScore}</TableCell>

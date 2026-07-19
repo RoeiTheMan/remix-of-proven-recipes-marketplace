@@ -12,6 +12,9 @@ const DEMO_DIR = "/demo-listings";
 // Ordered rules: first matching keyword wins. Keep the specific ones first
 // so e.g. "Skincare Flatlay" hits `social` before `cosmetic`.
 const RULES: Array<{ match: RegExp; file: string }> = [
+  { match: /amber\s*&\s*moss|botanical fragrance/i, file: "chatgpt-amber-fragrance.png" },
+  { match: /sunlit patisserie|caf[eé] launch/i, file: "chatgpt-sunlit-patisserie.png" },
+  { match: /moonlit fox|children.?s storybook/i, file: "chatgpt-moonlit-fox.png" },
   { match: /skincare\s*flatlay|social\s*media/i, file: "social.svg" },
   { match: /watch/i, file: "luxury-watch.svg" },
   { match: /sneaker/i, file: "sneaker.svg" },

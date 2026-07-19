@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Star, ArrowUp, ArrowDown, Trash2, Image as ImageIcon, Eye, Pencil } from "lucide-react";
 import type { Listing, UsageRights } from "@/types";
-import { SUPPORTED_MODELS, modelLabel, settingsFieldsFor } from "@/lib/models";
+import { SUPPORTED_MODELS, modelDisplayName, modelLabel, settingsFieldsFor } from "@/lib/models";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 
 export const Route = createFileRoute("/creator")({ component: Creator });
@@ -233,7 +233,7 @@ function ListingRow({ listing, onChanged }: { listing: Listing; onChanged: () =>
           <span className="truncate">{listing.title}</span>
         </div>
       </TableCell>
-      <TableCell>{modelLabel(listing.model)} {listing.modelVersion}</TableCell>
+      <TableCell>{modelDisplayName(listing.model, listing.modelVersion)}</TableCell>
       <TableCell className="label-eyebrow">{listing.status}</TableCell>
       <TableCell className="text-right font-mono">${(listing.priceCents / 100).toFixed(2)}</TableCell>
       <TableCell className="text-right">{listing.salesCount}</TableCell>

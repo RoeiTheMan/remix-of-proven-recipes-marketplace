@@ -9,7 +9,7 @@ import { CreatorInline } from "@/components/CreatorInline";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
-import { modelLabel } from "@/lib/models";
+import { modelDisplayName } from "@/lib/models";
 import { CheckCircle2 } from "lucide-react";
 
 type Sort = "newest" | "oldest" | "consistency" | "model";
@@ -155,7 +155,7 @@ function PurchaseCard({
           </div>
         )}
         <div className="flex items-center justify-between text-xs text-neutral-gray pt-2 border-t border-border">
-          <span>{modelLabel(listing.model)} · {listing.modelVersion}</span>
+          <span>{modelDisplayName(listing.model, listing.modelVersion)}</span>
           <span className="font-mono text-ink">${(priceCents / 100).toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-between text-[11px] text-neutral-gray">

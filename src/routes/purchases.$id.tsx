@@ -13,7 +13,7 @@ import { CreatorInline } from "@/components/CreatorInline";
 import { ReviewStars } from "@/components/ReviewStars";
 import { Copy, Wand2, Star } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
-import { modelLabel } from "@/lib/models";
+import { modelDisplayName } from "@/lib/models";
 
 export const Route = createFileRoute("/purchases/$id")({ component: PurchaseDetail });
 
@@ -105,7 +105,7 @@ function PurchaseDetail() {
           <Meta label="Price paid" value={`$${(purchase.priceCents / 100).toFixed(2)}`} />
           <Meta label="License" value={<span className="capitalize">{listing.usageRights}</span>} />
           <Meta label="Aspect" value={listing.aspectRatio} />
-          <Meta label="Model" value={`${modelLabel(listing.model)} ${listing.modelVersion}`} />
+          <Meta label="Model" value={modelDisplayName(listing.model, listing.modelVersion)} />
           <Meta label="Consistency" value={String(listing.consistencyScore)} />
         </section>
 

@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Flag, Lock, Check, CheckCircle2 } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
-import { modelLabel as modelLabelSafe } from "@/lib/models";
+import { modelDisplayName, modelLabel as modelLabelSafe } from "@/lib/models";
 import { BrandLottie } from "@/components/BrandLottie";
 import purchaseSuccess from "@/assets/lottie/purchase-success";
 
@@ -114,7 +114,7 @@ function ListingDetail() {
           <span className="text-xs text-neutral-gray">{listing.salesCount} sales</span>
         </div>
         <div className="mt-4 flex flex-wrap gap-2">
-          <Badge variant="outline">{modelLabelSafe(listing.model)} {listing.modelVersion}</Badge>
+          <Badge variant="outline">{modelDisplayName(listing.model, listing.modelVersion)}</Badge>
           <Badge variant="outline">{listing.aspectRatio}</Badge>
           <Badge variant="outline" className="capitalize">{listing.usageRights} rights</Badge>
           <ConsistencyBadge score={listing.consistencyScore} size="md" />
@@ -274,7 +274,7 @@ function IncludedPanel({ listing, purchased, secret }: IncludedPanelProps) {
   const items = [
     "Full generation prompt",
     "Negative prompt",
-    `Model and version — ${modelLabelSafe(listing.model)} ${listing.modelVersion}`,
+    `Model and version — ${modelDisplayName(listing.model, listing.modelVersion)}`,
     "Recommended settings",
     `Aspect ratio — ${listing.aspectRatio}`,
     "Usage notes",

@@ -7,7 +7,7 @@ import { ImagePlaceholder } from "./ImagePlaceholder";
 import { ConsistencyBadge } from "./ConsistencyBadge";
 import { Check } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
-import { modelLabel } from "@/lib/models";
+import { modelDisplayName } from "@/lib/models";
 
 export function PurchaseDialog({
   listing, open, onOpenChange, onConfirm, busy,
@@ -36,7 +36,7 @@ export function PurchaseDialog({
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
                     <span className="border border-border px-1.5 py-0.5">
-                      {modelLabel(listing.model)} {listing.modelVersion}
+                      {modelDisplayName(listing.model, listing.modelVersion)}
                     </span>
                     <span className="border border-border px-1.5 py-0.5 capitalize">
                       {listing.usageRights} rights

@@ -15,6 +15,7 @@ import type {
   CreatorProfile,
   RequestStatus,
 } from "@/types";
+import { normalizeModelValue } from "@/lib/models";
 
 // Listing status: DB has removed_by_admin; app type has removed.
 export function mapListingStatus(s: string): ListingStatus {
@@ -34,13 +35,14 @@ export function mapRequestStatus(s: string): RequestStatus {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export function mapListingRow(r: any, previewImages: string[] = []): Listing {
+  const model = normalizeModelValue(r.model);
   return {
     id: r.id,
     creatorId: r.creator_id,
     title: r.title,
     description: r.description ?? "",
-    model: r.model,
-    modelVersion: r.model_version ?? "",
+    model,
+    modelVersion: model === "nano-banana" ? "latest" : (r.model_version ?? ""),
     aspectRatio: r.aspect_ratio ?? "1:1",
     imageType: r.image_type ?? "",
     styleTags: r.style_tags ?? [],
@@ -96,7 +98,9 @@ export function mapRequestRow(r: any, offerCount = 0): CustomRequest {
     buyerId: r.buyer_id,
     title: r.title,
     brief: r.brief ?? "",
-    modelPreference: r.model_preference ?? undefined,
+    modelPreference: r.model_preference
+      ? normalizeModelValue(r.model_preference)
+      : undefined,
     budgetCents: r.budget_cents,
     deadline: r.deadline ?? "",
     usageRights: r.usage_rights,

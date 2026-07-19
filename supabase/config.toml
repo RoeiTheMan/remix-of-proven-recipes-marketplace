@@ -4,3 +4,9 @@ project_id = "wvvklhszudwlsmplngcg"
 # validation and best-effort rate limit, and only reads published listings.
 [functions.advisor-recommend]
 verify_jwt = false
+
+[functions.advisor-transcribe]
+verify_jwt = false
+
+[functions.advisor-speak]
+verify_jwt = false

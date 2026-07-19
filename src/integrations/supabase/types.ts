@@ -426,6 +426,21 @@ export type Database = {
           },
         ]
       }
+      private_config: {
+        Row: {
+          key: string
+          value: string
+        }
+        Insert: {
+          key: string
+          value?: string
+        }
+        Update: {
+          key?: string
+          value?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -741,6 +756,31 @@ export type Database = {
           _payload?: Json
         }
         Returns: string
+      }
+      report_listing: {
+        Args: {
+          _details?: string
+          _listing_id: string
+          _reason: Database["public"]["Enums"]["report_reason"]
+        }
+        Returns: {
+          admin_id: string | null
+          admin_notes: string | null
+          created_at: string
+          details: string
+          id: string
+          listing_id: string
+          reason: Database["public"]["Enums"]["report_reason"]
+          reporter_id: string
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "reports"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       set_listing_status: {
         Args: {

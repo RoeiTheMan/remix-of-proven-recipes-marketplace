@@ -9,6 +9,7 @@ import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { ConsistencyBadge } from "@/components/ConsistencyBadge";
 import { ReviewStars } from "@/components/ReviewStars";
 import { PurchaseDialog } from "@/components/PurchaseDialog";
+import { ReportDialog } from "@/components/ReportDialog";
 import { CreatorInline } from "@/components/CreatorInline";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -27,6 +28,7 @@ function ListingDetail() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [justPurchasedId, setJustPurchasedId] = useState<string | null>(null);
 
@@ -212,7 +214,14 @@ function ListingDetail() {
         </Tabs>
 
         <button
-          onClick={() => toast("Report submitted for review.")}
+          onClick={() => {
+            if (!isSignedIn) {
+              toast("Please sign in to report a listing.");
+              nav({ to: "/auth" });
+              return;
+            }
+            setReportOpen(true);
+          }}
           className="mt-6 inline-flex items-center gap-2 text-xs text-neutral-gray hover:text-ink"
         >
           <Flag className="h-3 w-3" /> Report this listing
@@ -220,6 +229,7 @@ function ListingDetail() {
       </div>
 
       <PurchaseDialog listing={listing} open={open} onOpenChange={setOpen} onConfirm={handleBuy} busy={busy} />
+      <ReportDialog listingId={listing.id} open={reportOpen} onOpenChange={setReportOpen} />
     </div>
   );
 }

@@ -23,7 +23,7 @@ function NewRequest() {
   const [deadline, setDeadline] = useState("");
   const [rights, setRights] = useState<UsageRights>("commercial");
 
-  if (role !== "buyer") return <div className="max-w-2xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Buyers only</h1><p className="text-neutral-gray mt-2">Switch to Buyer role to post a request.</p></div>;
+  if (role !== "buyer") return <div className="max-w-2xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Buyers only</h1><p className="text-neutral-gray mt-2">Posting a custom request requires a signed-in buyer account.</p></div>;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

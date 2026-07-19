@@ -16,7 +16,7 @@ function AdminLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   if (role !== "admin") {
-    return <div className="max-w-3xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Admin only</h1><p className="text-neutral-gray mt-2">Switch to Admin role to access this area.</p></div>;
+    return <div className="max-w-3xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Admin only</h1><p className="text-neutral-gray mt-2">This area requires administrator permissions. Sign in with an administrator account to continue.</p></div>;
   }
 
   return (

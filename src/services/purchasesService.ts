@@ -88,7 +88,7 @@ export async function getCreatorRecentSales(
     .limit(limit);
   const rows = data ?? [];
   const buyerIds = Array.from(new Set(rows.map((r) => r.buyer_id)));
-  let buyerNames: Record<string, string> = {};
+  const buyerNames: Record<string, string> = {};
   if (buyerIds.length) {
     const { data: profs } = await supabase
       .from("profiles")
@@ -112,7 +112,7 @@ export async function getPublicReviewsWithBuyer(listingId: string) {
     .order("created_at", { ascending: false });
   const rs = reviews ?? [];
   const buyerIds = Array.from(new Set(rs.map((r) => r.buyer_id)));
-  let names: Record<string, string> = {};
+  const names: Record<string, string> = {};
   if (buyerIds.length) {
     const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", buyerIds);
     for (const p of profs ?? []) names[p.id] = p.display_name || "Buyer";

@@ -20,10 +20,27 @@ export async function getRequest(id: string) {
     supabase.from("chat_messages").select("*").eq("request_id", id).order("created_at"),
   ]);
   if (!request) return null;
+
+  // Resolve display names from the real profiles table (publicly readable by RLS)
+  // for the buyer, every offer creator, and every chat sender.
+  const userIds = Array.from(
+    new Set([
+      request.buyer_id,
+      ...(offers ?? []).map((o) => o.creator_id),
+      ...(messages ?? []).map((m) => m.sender_id),
+    ].filter(Boolean)),
+  );
+  const names: Record<string, string> = {};
+  if (userIds.length) {
+    const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", userIds);
+    for (const p of profs ?? []) names[p.id] = p.display_name || "User";
+  }
+
   return {
     request: mapRequestRow(request, offers?.length ?? 0),
     offers: (offers ?? []).map(mapOfferRow),
     messages: (messages ?? []).map(mapChatRow),
+    names,
   };
 }
 

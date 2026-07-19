@@ -4,41 +4,74 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { ReportStatus } from "@/types";
 import { mapListingRow, mapReportRow, mapProfileRow, mapCreatorProfileRow } from "./_mappers";
+import { modelLabel } from "@/lib/models";
 
+// Every dashboard number is computed from real data. Metrics that cannot be
+// derived honestly (approval rate, dispute rate, health score) were removed
+// rather than shown as fabricated constants.
 export async function getDashboardStats() {
+  // The RPC checks has_role(auth.uid(),'admin') and throws otherwise, so the
+  // follow-up table reads below only ever run for admins (whose RLS policies
+  // allow reading all purchases and listings).
   const { data, error } = await supabase.rpc("admin_dashboard_stats");
   if (error) throw error;
   /* eslint-disable @typescript-eslint/no-explicit-any */
   const s = (data ?? {}) as any;
+
+  const [{ data: purchaseRows }, { data: listingRows }] = await Promise.all([
+    supabase.from("purchases").select("created_at,status,buyer_id"),
+    supabase.from("listings").select("consistency_score,status").eq("status", "published"),
+  ]);
+  const purchases = purchaseRows ?? [];
+  const completed = purchases.filter((p) => p.status === "completed");
+
+  // Real sales-over-time: completed purchases bucketed per day, last 14 days.
+  const dayKey = (d: Date) => d.toISOString().slice(0, 10);
+  const buckets = new Map<string, number>();
+  for (let i = 13; i >= 0; i--) {
+    buckets.set(dayKey(new Date(Date.now() - i * 86400_000)), 0);
+  }
+  for (const p of completed) {
+    const key = dayKey(new Date(p.created_at));
+    if (buckets.has(key)) buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  }
+  const salesOverTime = Array.from(buckets.entries()).map(([day, sales]) => ({
+    day: day.slice(5), // MM-DD
+    sales,
+  }));
+
+  // Real distinct buyers with at least one completed purchase.
+  const activeBuyers = new Set(completed.map((p) => p.buyer_id)).size;
+
+  // Real transaction status distribution.
+  const statusCounts = new Map<string, number>();
+  for (const p of purchases) statusCounts.set(p.status, (statusCounts.get(p.status) ?? 0) + 1);
+  const txStatuses = Array.from(statusCounts.entries()).map(([status, count]) => ({ status, count }));
+  if (txStatuses.length === 0) txStatuses.push({ status: "completed", count: 0 });
+
+  // Real average declared consistency score across published listings.
+  const scores = (listingRows ?? []).map((l) => l.consistency_score).filter((n): n is number => typeof n === "number");
+  const avgConsistency = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+
   const listingsByModel = Object.entries((s.listings_by_model ?? {}) as Record<string, number>).map(
-    ([model, count]) => ({ model, count: count as number }),
+    ([model, count]) => ({ model: modelLabel(model), count: count as number }),
   );
   const ratingDistribution = [1, 2, 3, 4, 5].map((star) => ({
     star: `${star}★`,
     count: (s.rating_distribution?.[String(star)] as number | undefined) ?? 0,
   }));
-  const salesOverTime = Array.from({ length: 14 }, (_, i) => {
-    const day = new Date(Date.now() - (13 - i) * 86400_000);
-    return { day: day.toISOString().slice(5, 10), sales: 0 };
-  });
+
   return {
     activeCreators: s.total_creators ?? 0,
-    activeBuyers: 0,
+    activeBuyers,
     gmvCents: s.gmv_cents ?? 0,
     transactions: s.total_purchases ?? 0,
-    pendingReviews: s.total_reports_open ?? 0,
-    approvalRate: 96,
-    healthScore: 88,
-    disputeRate: 2.4,
-    avgConsistency: 88,
+    openReports: s.total_reports_open ?? 0,
+    avgConsistency,
     salesOverTime,
     listingsByModel,
     ratingDistribution,
-    txStatuses: [
-      { status: "completed", count: s.total_purchases ?? 0 },
-      { status: "pending", count: 0 },
-      { status: "refunded", count: 0 },
-    ],
+    txStatuses,
   };
 }
 

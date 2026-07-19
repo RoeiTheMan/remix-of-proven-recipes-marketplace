@@ -8,6 +8,40 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
+
+function PasswordInput({
+  value, onChange, autoComplete, minLength,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+  minLength?: number;
+}) {
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative mt-2">
+      <Input
+        type={show ? "text" : "password"}
+        required
+        autoComplete={autoComplete}
+        minLength={minLength}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="pr-10"
+      />
+      <button
+        type="button"
+        tabIndex={-1}
+        aria-label={show ? "Hide password" : "Show password"}
+        onClick={() => setShow((s) => !s)}
+        className="absolute inset-y-0 right-0 flex items-center px-3 text-neutral-gray hover:text-ink"
+      >
+        {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
 
 const search = z.object({ next: z.string().optional() });
 
@@ -95,7 +129,7 @@ function Auth() {
         <TabsContent value="in">
           <form className="space-y-4 mt-6" onSubmit={(e) => submit("in", e)}>
             <div><Label>Email</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2" /></div>
-            <div><Label>Password</Label><Input type="password" required autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2" /></div>
+            <div><Label>Password</Label><PasswordInput value={password} onChange={setPassword} autoComplete="current-password" /></div>
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</Button>
           </form>
         </TabsContent>
@@ -103,7 +137,7 @@ function Auth() {
           <form className="space-y-4 mt-6" onSubmit={(e) => submit("up", e)}>
             <div><Label>Display name</Label><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-2" placeholder="How other Pickture users see you" /></div>
             <div><Label>Email</Label><Input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2" /></div>
-            <div><Label>Password</Label><Input type="password" required autoComplete="new-password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2" /></div>
+            <div><Label>Password</Label><PasswordInput value={password} onChange={setPassword} autoComplete="new-password" minLength={6} /></div>
             <Button type="submit" variant="signal" className="w-full" disabled={busy}>{busy ? "Creating…" : "Create account"}</Button>
           </form>
         </TabsContent>

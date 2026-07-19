@@ -21,7 +21,7 @@ export function FilterBar({
         <SelectTrigger><SelectValue placeholder="Model" /></SelectTrigger>
         <SelectContent>
           <SelectItem value="all">All models</SelectItem>
-          {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.label}>{m.label}</SelectItem>)}
+          {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
         </SelectContent>
       </Select>
       <Select value={filters.imageType ?? "all"} onValueChange={(v) => onChange({ ...filters, imageType: v === "all" ? undefined : v })}>

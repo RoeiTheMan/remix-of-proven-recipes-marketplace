@@ -28,7 +28,7 @@ function ListingDetail() {
   const [busy, setBusy] = useState(false);
   const [justPurchasedId, setJustPurchasedId] = useState<string | null>(null);
 
-  const { data } = useQuery({ queryKey: ["listing", id], queryFn: () => getListing(id) });
+  const { data, isPending } = useQuery({ queryKey: ["listing", id], queryFn: () => getListing(id) });
   const { data: reviews = [] } = useQuery({
     queryKey: ["listing-reviews-public", id],
     queryFn: () => getPublicReviewsWithBuyer(id),
@@ -43,7 +43,14 @@ function ListingDetail() {
     queryFn: () => getListingImages(id),
   });
 
-  if (!data?.listing) return <div className="max-w-7xl mx-auto px-6 py-16">Loading…</div>;
+  if (isPending) return <div className="max-w-7xl mx-auto px-6 py-16">Loading…</div>;
+  if (!data?.listing)
+    return (
+      <div className="max-w-3xl mx-auto px-6 py-16">
+        <h1 className="font-display text-3xl">Recipe not found</h1>
+        <p className="text-neutral-gray mt-2">This listing doesn't exist or is no longer available.</p>
+      </div>
+    );
   const { listing, secret } = data;
   const isOwner = !!user && listing.creatorId === user.id;
   const existingPurchase = purchases.find((p) => p.listing.id === listing.id)?.purchase;

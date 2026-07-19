@@ -1,11 +1,12 @@
 // Real Lovable Cloud listings service.
 // Uses signed URLs for the private listing-images bucket.
-// Falls back to seed mocks only when the DB catalog is completely empty.
+// All data comes from the real database — an empty catalog renders an honest
+// empty state (no mock/seed fallback).
 import { supabase } from "@/integrations/supabase/client";
 import type { Listing, ListingStatus, RecipeSecret } from "@/types";
 import { mapListingRow, mapRecipeSecretRow } from "./_mappers";
 import { getCreatorSummaries } from "./creatorsService";
-import * as seeds from "@/mocks";
+import { modelLabel } from "@/lib/models";
 
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
 
@@ -88,7 +89,9 @@ function applyClientFilters(items: Listing[], filters: ListingFilters, sort: Lis
     const q = filters.q.toLowerCase();
     out = out.filter((l) => l.title.toLowerCase().includes(q) || l.styleTags.some((t) => t.toLowerCase().includes(q)));
   }
-  if (filters.model) out = out.filter((l) => l.model === filters.model);
+  // Compare via modelLabel so slugs ("midjourney-v7") and legacy pretty-label
+  // rows ("Midjourney V7") both match the same filter selection.
+  if (filters.model) out = out.filter((l) => modelLabel(l.model) === modelLabel(filters.model));
   if (filters.usageRights) out = out.filter((l) => l.usageRights === filters.usageRights);
   if (filters.imageType) out = out.filter((l) => l.imageType === filters.imageType);
   if (filters.minPrice != null) out = out.filter((l) => l.priceCents >= filters.minPrice!);
@@ -114,10 +117,8 @@ export async function getListings(filters: ListingFilters = {}, sort: ListingSor
     .order("created_at", { ascending: false });
   if (error) throw error;
 
-  let items: Listing[];
-  if (!data || data.length === 0) {
-    items = seeds.listings.filter((l) => l.status === "published");
-  } else {
+  let items: Listing[] = [];
+  if (data && data.length > 0) {
     const [imgs, creators] = await Promise.all([
       fetchImageUrlsByListing(data.map((r) => r.id)),
       getCreatorSummaries(data.map((r) => r.creator_id)),
@@ -136,9 +137,8 @@ export async function getListings(filters: ListingFilters = {}, sort: ListingSor
 export async function getListing(id: string) {
   const { data: listing } = await supabase.from("listings").select("*").eq("id", id).maybeSingle();
   if (!listing) {
-    const mock = seeds.listings.find((l) => l.id === id) ?? null;
-    const secret = mock ? (seeds.recipeSecrets.find((r) => r.listingId === id) ?? null) : null;
-    return { listing: mock, secret };
+    // Unknown or invisible listing (RLS): honest not-found, no mock fallback.
+    return { listing: null, secret: null };
   }
   const [imgs, creators] = await Promise.all([
     fetchImageUrlsByListing([id]),

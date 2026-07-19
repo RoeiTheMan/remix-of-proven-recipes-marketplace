@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   getListingsByCreator,
@@ -430,12 +430,12 @@ function ImageManagerDialog({
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     try { setImages(await getListingImages(listing.id)); }
     finally { setLoading(false); }
-  }
-  useEffect(() => { if (open) load(); /* eslint-disable-next-line */ }, [open]);
+  }, [listing.id]);
+  useEffect(() => { if (open) void load(); }, [open, load]);
 
   async function onFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;

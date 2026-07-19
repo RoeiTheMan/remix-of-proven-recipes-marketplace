@@ -52,15 +52,13 @@ function AdminOverview() {
         </p>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <StatCard label="Active creators" value={data.activeCreators} />
         <StatCard label="Active buyers" value={data.activeBuyers} />
         <StatCard label="GMV" value={`$${(data.gmvCents / 100).toFixed(0)}`} accent="signal" />
         <StatCard label="Transactions" value={data.transactions} />
-        <StatCard label="Pending reviews" value={data.pendingReviews} />
-        <StatCard label="Approval rate" value={`${data.approvalRate}%`} accent="teal" />
-        <StatCard label="Dispute rate" value={`${data.disputeRate}%`} />
-        <StatCard label="Avg consistency" value={data.avgConsistency} accent="teal" />
+        <StatCard label="Open reports" value={data.openReports} />
+        <StatCard label="Avg consistency" value={data.avgConsistency ?? "—"} accent="teal" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -111,11 +109,6 @@ function AdminOverview() {
             </BarChart>
           </ResponsiveContainer>
         </AdminChartCard>
-      </div>
-
-      <div className="border border-ink p-6">
-        <span className="label-eyebrow">Marketplace health score</span>
-        <div className="font-display text-6xl mt-2">{data.healthScore}<span className="text-2xl text-neutral-gray">/100</span></div>
       </div>
     </div>
   );

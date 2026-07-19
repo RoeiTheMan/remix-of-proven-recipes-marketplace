@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getRequest, acceptOffer, sendMessage, submitOffer } from "@/services/requestsService";
 import { useAuth } from "@/context/AuthContext";
 import { OfferCard } from "@/components/OfferCard";
 import { ChatPanel } from "@/components/ChatPanel";
-import { db } from "@/services/_store";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,12 +23,30 @@ function RequestDetail() {
   const [offerPrice, setOfferPrice] = useState("");
   const [offerEta, setOfferEta] = useState("5");
 
+  // Live chat: refresh this request when a new chat message is inserted.
+  // Supabase Realtime respects RLS (participants only). If Realtime is not
+  // enabled for chat_messages, this receives nothing and the existing
+  // refetch-on-send behavior below still works as the fallback.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`request-chat-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "chat_messages", filter: `request_id=eq.${id}` },
+        () => qc.invalidateQueries({ queryKey: ["request", id] }),
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [id, qc]);
+
   if (!data?.request) return <div className="max-w-4xl mx-auto px-6 py-16">Loading…</div>;
-  const { request, offers, messages } = data;
+  const { request, offers, messages, names } = data;
   const accepted = offers.find((o) => o.status === "accepted");
   const canChat = !!accepted && !!user && (user.id === request.buyerId || accepted.creatorId === user.id);
 
-  const nameFor = (uid: string) => db.profiles.find((p) => p.id === uid)?.displayName ?? uid;
+  const nameFor = (uid: string) => names[uid] ?? "User";
 
   async function handleAccept(offerId: string) {
     await acceptOffer(offerId);

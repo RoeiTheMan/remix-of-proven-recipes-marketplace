@@ -5,7 +5,7 @@ import { MatchResultCard } from "@/components/MatchResultCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Mic } from "lucide-react";
+import { LoaderCircle, Mic } from "lucide-react";
 import { BrandLottie } from "@/components/BrandLottie";
 import aiThinking from "@/assets/lottie/ai-thinking";
 import { toast } from "sonner";
@@ -29,7 +29,10 @@ function Advisor() {
   const [loading, setLoading] = useState(false);
 
   async function run() {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      toast.error("Describe the visual you need first.");
+      return;
+    }
     setLoading(true);
     setResponse(null);
     try {
@@ -58,6 +61,7 @@ function Advisor() {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && run()}
           placeholder="Example: cinematic sneaker campaign, moody light, commercial license, under $15"
+          maxLength={500}
           className="h-12 text-base"
         />
         <TooltipProvider>
@@ -70,8 +74,21 @@ function Advisor() {
             <TooltipContent>Voice search connects later.</TooltipContent>
           </Tooltip>
         </TooltipProvider>
-        <Button size="lg" onClick={run} disabled={loading} className="h-12">
-          Find My Best Recipe
+        <Button
+          size="lg"
+          onClick={run}
+          disabled={loading}
+          aria-busy={loading}
+          className="h-12 min-w-52"
+        >
+          {loading ? (
+            <>
+              <LoaderCircle className="animate-spin" />
+              Finding matches…
+            </>
+          ) : (
+            "Find My Best Recipe"
+          )}
         </Button>
       </div>
 

@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { getListing, getListingImages } from "@/services/listingsService";
-import { getPublicReviewsWithBuyer, simulatePurchase, getPurchases } from "@/services/purchasesService";
+import { getPublicReviewsWithBuyer, simulatePurchase, getPurchases, sendPurchaseEmails } from "@/services/purchasesService";
 import { useAuth } from "@/context/AuthContext";
 import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { ConsistencyBadge } from "@/components/ConsistencyBadge";
@@ -67,6 +67,7 @@ function ListingDetail() {
     setBusy(true);
     try {
       const purchase = await simulatePurchase(listing.id);
+      sendPurchaseEmails(purchase.id);
       setJustPurchasedId(purchase.id);
       setOpen(false);
       toast.success("Recipe unlocked.");

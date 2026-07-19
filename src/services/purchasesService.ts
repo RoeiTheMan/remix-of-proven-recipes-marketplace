@@ -13,6 +13,18 @@ export async function simulatePurchase(listingId: string, _buyerId?: string): Pr
   return mapPurchaseRow(data);
 }
 
+// Fire-and-forget transactional emails (buyer confirmation + creator sale
+// notification) via the Resend edge function. The function resolves all
+// recipients server-side and dedupes per purchase, so calling it again for
+// the same purchase is safe. Email failure must never affect the purchase UX.
+export function sendPurchaseEmails(purchaseId: string): void {
+  void supabase.functions
+    .invoke("send-purchase-emails", { body: { purchaseId } })
+    .catch(() => {
+      // Intentionally silent: delivery status is recorded server-side for Admin.
+    });
+}
+
 export async function getPurchases(
   _buyerId?: string,
 ): Promise<Array<{ purchase: Purchase; listing: Listing; reviewed: boolean }>> {

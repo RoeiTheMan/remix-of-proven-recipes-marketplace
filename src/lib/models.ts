@@ -30,17 +30,42 @@ export function modelLabel(value: string | undefined | null): string {
   return asLabel ? asLabel.label : value;
 }
 
-// Settings fields to surface in the creator form per model family.
-export function settingsHintFor(modelValue: string): string[] {
+// Model-specific settings fields for the creator form. Only fields relevant
+// to the selected model family are shown (course requirement: no
+// Midjourney-only parameters on ChatGPT/Nano Banana listings).
+export interface SettingsField {
+  key: string;
+  label: string;
+  placeholder: string;
+}
+
+export function settingsFieldsFor(modelValue: string): SettingsField[] {
   switch (modelValue) {
     case "midjourney-v7":
-      return ["aspect ratio", "stylize", "chaos", "quality", "seed policy", "style reference", "omni-reference"];
+      return [
+        { key: "stylize", label: "Stylize", placeholder: "e.g. 250" },
+        { key: "chaos", label: "Chaos", placeholder: "e.g. 10" },
+        { key: "quality", label: "Quality", placeholder: "e.g. 1" },
+        { key: "seed_policy", label: "Seed guidance", placeholder: "e.g. fixed seed 1234 for consistency" },
+        { key: "style_reference", label: "Style reference", placeholder: "how to use --sref" },
+        { key: "omni_reference", label: "Omni-reference", placeholder: "how to use --oref" },
+      ];
     case "gpt-image-2":
-      return ["aspect ratio", "quality", "reference-image guidance", "editing instructions", "output requirements"];
+      return [
+        { key: "quality", label: "Quality", placeholder: "e.g. high" },
+        { key: "reference_guidance", label: "Reference-image guidance", placeholder: "how to attach & weight references" },
+        { key: "edit_instructions", label: "Edit instructions", placeholder: "follow-up edit prompts that work" },
+        { key: "output_requirements", label: "Output requirements", placeholder: "e.g. transparent background, PNG" },
+      ];
     case "nano-banana-pro":
     case "nano-banana-2":
-      return ["aspect ratio", "reference-image guidance", "text rendering", "subject consistency", "output requirements"];
+      return [
+        { key: "reference_guidance", label: "Reference-image guidance", placeholder: "how to attach references" },
+        { key: "text_rendering", label: "Text rendering", placeholder: "instructions for in-image text" },
+        { key: "subject_consistency", label: "Subject consistency", placeholder: "how to keep the subject stable" },
+        { key: "output_requirements", label: "Output requirements", placeholder: "e.g. 4K, no watermark" },
+      ];
     default:
-      return ["aspect ratio"];
+      return [];
   }
 }

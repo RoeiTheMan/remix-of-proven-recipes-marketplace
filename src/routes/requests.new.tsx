@@ -14,7 +14,7 @@ import { SUPPORTED_MODELS } from "@/lib/models";
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
 function NewRequest() {
-  const { user, role } = useAuth();
+  const { user, isBuyer } = useAuth();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [brief, setBrief] = useState("");
@@ -23,19 +23,23 @@ function NewRequest() {
   const [deadline, setDeadline] = useState("");
   const [rights, setRights] = useState<UsageRights>("commercial");
 
-  if (role !== "buyer") return <div className="max-w-2xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Buyers only</h1><p className="text-neutral-gray mt-2">Posting a custom request requires a signed-in buyer account.</p></div>;
+  if (!isBuyer) return <div className="max-w-2xl mx-auto px-6 py-16"><h1 className="font-display text-3xl">Buyers only</h1><p className="text-neutral-gray mt-2">Posting a custom request requires a signed-in buyer account.</p></div>;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!user) return;
-    const req = await createRequest({
-      buyerId: user.id, title, brief, modelPreference: model || undefined,
-      budgetCents: Math.round(parseFloat(budget || "0") * 100),
-      deadline: deadline || new Date(Date.now() + 7 * 86400_000).toISOString(),
-      usageRights: rights,
-    });
-    toast.success("Request posted");
-    navigate({ to: "/requests/$id", params: { id: req.id } });
+    try {
+      const req = await createRequest({
+        buyerId: user.id, title, brief, modelPreference: model || undefined,
+        budgetCents: Math.round(parseFloat(budget || "0") * 100),
+        deadline: deadline || new Date(Date.now() + 7 * 86400_000).toISOString(),
+        usageRights: rights,
+      });
+      toast.success("Request posted");
+      navigate({ to: "/requests/$id", params: { id: req.id } });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not post the request");
+    }
   }
 
   return (
@@ -51,7 +55,7 @@ function NewRequest() {
             <Select value={model} onValueChange={setModel}>
               <SelectTrigger className="mt-2"><SelectValue placeholder="Any" /></SelectTrigger>
               <SelectContent>
-                {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.label}>{m.label}</SelectItem>)}
+                {SUPPORTED_MODELS.map((m) => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>

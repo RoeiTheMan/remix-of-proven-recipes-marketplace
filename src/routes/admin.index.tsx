@@ -8,6 +8,7 @@ import { AdminChartCard } from "@/components/AdminChartCard";
 import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { Bar, BarChart, CartesianGrid, Cell, Legend, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { NumberTicker } from "@/components/ui/number-ticker";
 
 export const Route = createFileRoute("/admin/")({ component: AdminOverview });
 
@@ -53,12 +54,12 @@ function AdminOverview() {
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <StatCard label="Active creators" value={data.activeCreators} />
-        <StatCard label="Active buyers" value={data.activeBuyers} />
-        <StatCard label="GMV" value={`$${(data.gmvCents / 100).toFixed(0)}`} accent="signal" />
-        <StatCard label="Transactions" value={data.transactions} />
-        <StatCard label="Open reports" value={data.openReports} />
-        <StatCard label="Avg consistency" value={data.avgConsistency ?? "—"} accent="teal" />
+        <StatCard label="Active creators" value={<NumberTicker value={data.activeCreators} />} />
+        <StatCard label="Active buyers" value={<NumberTicker value={data.activeBuyers} />} />
+        <StatCard label="GMV" value={<span>$<NumberTicker value={Math.round(data.gmvCents / 100)} /></span>} accent="signal" />
+        <StatCard label="Transactions" value={<NumberTicker value={data.transactions} />} />
+        <StatCard label="Open reports" value={<NumberTicker value={data.openReports} />} />
+        <StatCard label="Avg consistency" value={data.avgConsistency != null ? <NumberTicker value={data.avgConsistency} /> : "—"} accent="teal" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

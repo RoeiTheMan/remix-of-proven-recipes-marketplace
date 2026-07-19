@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { getRequest, acceptOffer, sendMessage, submitOffer } from "@/services/requestsService";
+import {
+  getRequest, acceptOffer, sendMessage, submitOffer,
+  getDelivery, submitDelivery, setDeliveryStatus, markRequestApproved,
+  type RequestDelivery,
+} from "@/services/requestsService";
 import { useAuth } from "@/context/AuthContext";
 import { OfferCard } from "@/components/OfferCard";
 import { ChatPanel } from "@/components/ChatPanel";
 import { supabase } from "@/integrations/supabase/client";
+import { modelLabel } from "@/lib/models";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,7 +20,7 @@ export const Route = createFileRoute("/requests/$id")({ component: RequestDetail
 
 function RequestDetail() {
   const { id } = Route.useParams();
-  const { user, role } = useAuth();
+  const { user, isBuyer, isCreator } = useAuth();
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["request", id], queryFn: () => getRequest(id) });
 
@@ -75,7 +80,7 @@ function RequestDetail() {
         <div>
           <span className="label-eyebrow">Request · {request.status}</span>
           <h1 className="font-display text-4xl mt-2">{request.title}</h1>
-          <div className="text-xs text-neutral-gray mt-2">Budget ${(request.budgetCents / 100).toFixed(0)} · {request.usageRights} · Model: {request.modelPreference ?? "Any"}</div>
+          <div className="text-xs text-neutral-gray mt-2">Budget ${(request.budgetCents / 100).toFixed(0)} · {request.usageRights} · Model: {request.modelPreference ? modelLabel(request.modelPreference) : "Any"}</div>
         </div>
         <p className="text-ink/80">{request.brief}</p>
 
@@ -87,7 +92,7 @@ function RequestDetail() {
                 key={o.id}
                 offer={o}
                 creatorName={nameFor(o.creatorId)}
-                canAccept={role === "buyer" && user?.id === request.buyerId && !accepted}
+                canAccept={isBuyer && user?.id === request.buyerId && !accepted}
                 onAccept={() => handleAccept(o.id)}
               />
             ))}
@@ -95,7 +100,7 @@ function RequestDetail() {
           </div>
         </div>
 
-        {role === "creator" && !accepted && (
+        {isCreator && user?.id !== request.buyerId && !accepted && (
           <form onSubmit={handleSubmitOffer} className="border border-border p-5 space-y-3">
             <span className="label-eyebrow">Submit an offer</span>
             <Textarea value={msg} onChange={(e) => setMsg(e.target.value)} placeholder="Explain your approach…" required />
@@ -108,20 +113,128 @@ function RequestDetail() {
         )}
 
         {accepted && (
-          <div className="border border-teal bg-teal/5 p-5">
-            <span className="label-eyebrow text-teal">Delivery</span>
-            <h3 className="font-display text-xl mt-2">Awaiting delivery from {nameFor(accepted.creatorId)}</h3>
-            <div className="mt-3 flex gap-2">
-              <Button variant="teal" size="sm" onClick={() => toast.success("Delivery approved")}>Approve delivery</Button>
-              <Button variant="outline" size="sm" onClick={() => toast("Requested revisions")}>Request revisions</Button>
-            </div>
-          </div>
+          <DeliveryPanel
+            requestId={id}
+            offerId={accepted.id}
+            creatorName={nameFor(accepted.creatorId)}
+            isAcceptedCreator={user?.id === accepted.creatorId}
+            isRequestBuyer={user?.id === request.buyerId}
+          />
         )}
       </div>
 
       <aside>
         <ChatPanel messages={messages} currentUserId={user?.id ?? ""} onSend={handleSend} disabled={!canChat} />
       </aside>
+    </div>
+  );
+}
+
+function DeliveryPanel({
+  requestId, offerId, creatorName, isAcceptedCreator, isRequestBuyer,
+}: {
+  requestId: string;
+  offerId: string;
+  creatorName: string;
+  isAcceptedCreator: boolean;
+  isRequestBuyer: boolean;
+}) {
+  const qc = useQueryClient();
+  const { data: delivery, isPending } = useQuery({
+    queryKey: ["delivery", offerId],
+    queryFn: () => getDelivery(offerId),
+  });
+  const [fullPrompt, setFullPrompt] = useState("");
+  const [negativePrompt, setNegativePrompt] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["delivery", offerId] });
+    qc.invalidateQueries({ queryKey: ["request", requestId] });
+  };
+
+  async function deliver(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      await submitDelivery({ offerId, fullPrompt, negativePrompt });
+      toast.success("Recipe delivered to the buyer.");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Delivery failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function decide(status: "approved" | "revision_requested", d: RequestDelivery) {
+    setBusy(true);
+    try {
+      await setDeliveryStatus(d.id, status);
+      if (status === "approved") await markRequestApproved(requestId);
+      toast.success(status === "approved" ? "Delivery approved." : "Revision requested.");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Action failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (isPending) return null;
+
+  return (
+    <div className="border border-teal bg-teal/5 p-5">
+      <span className="label-eyebrow text-teal">Delivery</span>
+
+      {/* Creator side: submit (or resubmit after a revision request). */}
+      {isAcceptedCreator && (!delivery || delivery.status === "revision_requested") && (
+        <form onSubmit={deliver} className="mt-3 space-y-3">
+          <h3 className="font-display text-xl">
+            {delivery ? "The buyer requested revisions — deliver an update" : "Deliver the visual recipe"}
+          </h3>
+          <Textarea required rows={5} placeholder="Full prompt…" value={fullPrompt} onChange={(e) => setFullPrompt(e.target.value)} />
+          <Textarea rows={2} placeholder="Negative prompt (optional)…" value={negativePrompt} onChange={(e) => setNegativePrompt(e.target.value)} />
+          <Button type="submit" variant="teal" size="sm" disabled={busy}>{busy ? "Delivering…" : "Deliver recipe"}</Button>
+        </form>
+      )}
+      {isAcceptedCreator && delivery && delivery.status !== "revision_requested" && (
+        <h3 className="font-display text-xl mt-2">
+          {delivery.status === "approved" ? "Delivery approved — nice work." : "Delivered. Waiting for the buyer's approval."}
+        </h3>
+      )}
+
+      {/* Buyer side: view + approve / request revisions. */}
+      {isRequestBuyer && !delivery && (
+        <h3 className="font-display text-xl mt-2">Awaiting delivery from {creatorName}</h3>
+      )}
+      {isRequestBuyer && delivery && (
+        <div className="mt-2 space-y-3">
+          <h3 className="font-display text-xl">
+            {delivery.status === "approved" ? "Approved — the recipe is yours."
+              : delivery.status === "revision_requested" ? `Waiting for ${creatorName}'s revision`
+              : `${creatorName} delivered your recipe`}
+          </h3>
+          {delivery.status !== "revision_requested" && (
+            <div className="border border-border bg-card p-4 text-sm whitespace-pre-wrap">
+              <div className="label-eyebrow mb-2">Full prompt</div>
+              {delivery.fullPrompt}
+              {delivery.negativePrompt && (
+                <>
+                  <div className="label-eyebrow mt-4 mb-2">Negative prompt</div>
+                  {delivery.negativePrompt}
+                </>
+              )}
+            </div>
+          )}
+          {delivery.status === "delivered" && (
+            <div className="flex gap-2">
+              <Button variant="teal" size="sm" disabled={busy} onClick={() => decide("approved", delivery)}>Approve delivery</Button>
+              <Button variant="outline" size="sm" disabled={busy} onClick={() => decide("revision_requested", delivery)}>Request revisions</Button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

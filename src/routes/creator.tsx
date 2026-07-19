@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Star, ArrowUp, ArrowDown, Trash2, Image as ImageIcon, Eye, Pencil } from "lucide-react";
 import type { Listing, UsageRights } from "@/types";
-import { SUPPORTED_MODELS, modelLabel } from "@/lib/models";
+import { SUPPORTED_MODELS, modelLabel, settingsFieldsFor } from "@/lib/models";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 
 export const Route = createFileRoute("/creator")({ component: Creator });
@@ -49,7 +49,7 @@ interface DraftForm {
   negativePrompt: string;
   partialPromptPreview: string;
   usageNotes: string;
-  settings: { steps: number; cfg: number; sampler: string };
+  settings: Record<string, string>;
 }
 
 const EMPTY_FORM: DraftForm = {
@@ -58,7 +58,7 @@ const EMPTY_FORM: DraftForm = {
   usageRights: "commercial", priceCents: 1500, consistencyScore: 90,
   fullPrompt: "", negativePrompt: "low-res, watermark, deformed",
   partialPromptPreview: "", usageNotes: "",
-  settings: { steps: 32, cfg: 6.5, sampler: "default" },
+  settings: {},
 };
 
 function Creator() {
@@ -301,11 +301,9 @@ function ListingEditorDialog({
         fullPrompt: secret?.fullPrompt ?? "",
         negativePrompt: secret?.negativePrompt ?? "",
         usageNotes: secret?.usageNotes ?? "",
-        settings: {
-          steps: Number(secret?.settings?.steps ?? 32),
-          cfg: Number(secret?.settings?.cfg ?? 6.5),
-          sampler: String(secret?.settings?.sampler ?? "DPM++ 2M Karras"),
-        },
+        settings: Object.fromEntries(
+          Object.entries(secret?.settings ?? {}).map(([k, v]) => [k, String(v)]),
+        ),
       });
       setStep(1);
     })();
@@ -328,7 +326,9 @@ function ListingEditorDialog({
         partialPromptPreview: form.partialPromptPreview,
         consistencyScore: form.consistencyScore,
         fullPrompt: form.fullPrompt, negativePrompt: form.negativePrompt,
-        settings: form.settings as unknown as Record<string, string | number>,
+        settings: Object.fromEntries(
+          Object.entries(form.settings).filter(([, v]) => v.trim() !== ""),
+        ) as Record<string, string | number>,
         usageNotes: form.usageNotes,
       };
       if (editing) {
@@ -384,10 +384,21 @@ function ListingEditorDialog({
             <Textarea rows={2} value={form.negativePrompt} onChange={(e) => setForm({ ...form, negativePrompt: e.target.value })} />
             <Label>Usage notes</Label>
             <Textarea rows={2} value={form.usageNotes} onChange={(e) => setForm({ ...form, usageNotes: e.target.value })} />
-            <div className="grid grid-cols-3 gap-3">
-              <div><Label>Steps</Label><Input type="number" value={form.settings.steps} onChange={(e) => setForm({ ...form, settings: { ...form.settings, steps: parseInt(e.target.value || "0") } })} /></div>
-              <div><Label>CFG</Label><Input type="number" step="0.1" value={form.settings.cfg} onChange={(e) => setForm({ ...form, settings: { ...form.settings, cfg: parseFloat(e.target.value || "0") } })} /></div>
-              <div><Label>Sampler</Label><Input value={form.settings.sampler} onChange={(e) => setForm({ ...form, settings: { ...form.settings, sampler: e.target.value } })} /></div>
+            <div>
+              <Label>{modelLabel(form.model)} settings</Label>
+              <p className="text-xs text-neutral-gray mt-1">Only settings relevant to this model are shown. Leave blank what doesn't apply.</p>
+              <div className="grid grid-cols-2 gap-3 mt-2">
+                {settingsFieldsFor(form.model).map((f) => (
+                  <div key={f.key}>
+                    <Label className="text-xs">{f.label}</Label>
+                    <Input
+                      placeholder={f.placeholder}
+                      value={form.settings[f.key] ?? ""}
+                      onChange={(e) => setForm({ ...form, settings: { ...form.settings, [f.key]: e.target.value } })}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

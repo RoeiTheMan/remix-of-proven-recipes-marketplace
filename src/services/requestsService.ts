@@ -107,3 +107,76 @@ export async function sendMessage(requestId: string, authorId: string, body: str
   if (error) throw error;
   return mapChatRow(data);
 }
+
+// ---- deliveries --------------------------------------------------------
+// One delivery row per accepted offer (UNIQUE offer_id). RLS: participants
+// read, accepted creator inserts/updates content, buyer updates status.
+
+export interface RequestDelivery {
+  id: string;
+  offerId: string;
+  fullPrompt: string;
+  negativePrompt: string;
+  status: "delivered" | "revision_requested" | "approved";
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function mapDelivery(r: any): RequestDelivery {
+  return {
+    id: r.id,
+    offerId: r.offer_id,
+    fullPrompt: r.full_prompt ?? "",
+    negativePrompt: r.negative_prompt ?? "",
+    status: r.status,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+  };
+}
+
+export async function getDelivery(offerId: string): Promise<RequestDelivery | null> {
+  const { data } = await supabase.from("deliveries").select("*").eq("offer_id", offerId).maybeSingle();
+  return data ? mapDelivery(data) : null;
+}
+
+export async function submitDelivery(input: {
+  offerId: string;
+  fullPrompt: string;
+  negativePrompt: string;
+}): Promise<RequestDelivery> {
+  const { data, error } = await supabase
+    .from("deliveries")
+    .upsert(
+      {
+        offer_id: input.offerId,
+        full_prompt: input.fullPrompt,
+        negative_prompt: input.negativePrompt,
+        status: "delivered",
+      },
+      { onConflict: "offer_id" },
+    )
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapDelivery(data);
+}
+
+export async function setDeliveryStatus(
+  deliveryId: string,
+  status: "approved" | "revision_requested",
+): Promise<RequestDelivery> {
+  const { data, error } = await supabase
+    .from("deliveries")
+    .update({ status })
+    .eq("id", deliveryId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return mapDelivery(data);
+}
+
+export async function markRequestApproved(requestId: string): Promise<void> {
+  // Buyer-only per RLS; marks the request closed after an approved delivery.
+  await supabase.from("custom_requests").update({ status: "approved" }).eq("id", requestId);
+}

@@ -9,13 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as CreatorRouteImport } from './routes/creator'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdvisorRouteImport } from './routes/advisor'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as RequestsIndexRouteImport } from './routes/requests.index'
 import { Route as PurchasesIndexRouteImport } from './routes/purchases.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as RequestsNewRouteImport } from './routes/requests.new'
@@ -28,11 +28,6 @@ import { Route as AdminLogsRouteImport } from './routes/admin.logs'
 import { Route as AdminListingsRouteImport } from './routes/admin.listings'
 import { Route as AdminCreatorsRouteImport } from './routes/admin.creators'
 
-const RequestsRoute = RequestsRouteImport.update({
-  id: '/requests',
-  path: '/requests',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CreatorRoute = CreatorRouteImport.update({
   id: '/creator',
   path: '/creator',
@@ -63,6 +58,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RequestsIndexRoute = RequestsIndexRouteImport.update({
+  id: '/requests/',
+  path: '/requests/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PurchasesIndexRoute = PurchasesIndexRouteImport.update({
   id: '/purchases/',
   path: '/purchases/',
@@ -74,14 +74,14 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   getParentRoute: () => AdminRoute,
 } as any)
 const RequestsNewRoute = RequestsNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => RequestsRoute,
+  id: '/requests/new',
+  path: '/requests/new',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const RequestsIdRoute = RequestsIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => RequestsRoute,
+  id: '/requests/$id',
+  path: '/requests/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const PurchasesIdRoute = PurchasesIdRouteImport.update({
   id: '/purchases/$id',
@@ -126,7 +126,6 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -138,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/requests/new': typeof RequestsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
+  '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -145,7 +145,6 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -157,6 +156,7 @@ export interface FileRoutesByTo {
   '/requests/new': typeof RequestsNewRoute
   '/admin': typeof AdminIndexRoute
   '/purchases': typeof PurchasesIndexRoute
+  '/requests': typeof RequestsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -166,7 +166,6 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/browse': typeof BrowseRoute
   '/creator': typeof CreatorRoute
-  '/requests': typeof RequestsRouteWithChildren
   '/admin/creators': typeof AdminCreatorsRoute
   '/admin/listings': typeof AdminListingsRoute
   '/admin/logs': typeof AdminLogsRoute
@@ -178,6 +177,7 @@ export interface FileRoutesById {
   '/requests/new': typeof RequestsNewRoute
   '/admin/': typeof AdminIndexRoute
   '/purchases/': typeof PurchasesIndexRoute
+  '/requests/': typeof RequestsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -188,7 +188,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/requests'
     | '/admin/creators'
     | '/admin/listings'
     | '/admin/logs'
@@ -200,6 +199,7 @@ export interface FileRouteTypes {
     | '/requests/new'
     | '/admin/'
     | '/purchases/'
+    | '/requests/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,7 +207,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/requests'
     | '/admin/creators'
     | '/admin/listings'
     | '/admin/logs'
@@ -219,6 +218,7 @@ export interface FileRouteTypes {
     | '/requests/new'
     | '/admin'
     | '/purchases'
+    | '/requests'
   id:
     | '__root__'
     | '/'
@@ -227,7 +227,6 @@ export interface FileRouteTypes {
     | '/auth'
     | '/browse'
     | '/creator'
-    | '/requests'
     | '/admin/creators'
     | '/admin/listings'
     | '/admin/logs'
@@ -239,6 +238,7 @@ export interface FileRouteTypes {
     | '/requests/new'
     | '/admin/'
     | '/purchases/'
+    | '/requests/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,22 +248,17 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BrowseRoute: typeof BrowseRoute
   CreatorRoute: typeof CreatorRoute
-  RequestsRoute: typeof RequestsRouteWithChildren
   CreatorProfileCreatorIdRoute: typeof CreatorProfileCreatorIdRoute
   ListingIdRoute: typeof ListingIdRoute
   PurchasesIdRoute: typeof PurchasesIdRoute
+  RequestsIdRoute: typeof RequestsIdRoute
+  RequestsNewRoute: typeof RequestsNewRoute
   PurchasesIndexRoute: typeof PurchasesIndexRoute
+  RequestsIndexRoute: typeof RequestsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/requests': {
-      id: '/requests'
-      path: '/requests'
-      fullPath: '/requests'
-      preLoaderRoute: typeof RequestsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/creator': {
       id: '/creator'
       path: '/creator'
@@ -306,6 +301,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/requests/': {
+      id: '/requests/'
+      path: '/requests'
+      fullPath: '/requests/'
+      preLoaderRoute: typeof RequestsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/purchases/': {
       id: '/purchases/'
       path: '/purchases'
@@ -322,17 +324,17 @@ declare module '@tanstack/react-router' {
     }
     '/requests/new': {
       id: '/requests/new'
-      path: '/new'
+      path: '/requests/new'
       fullPath: '/requests/new'
       preLoaderRoute: typeof RequestsNewRouteImport
-      parentRoute: typeof RequestsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/requests/$id': {
       id: '/requests/$id'
-      path: '/$id'
+      path: '/requests/$id'
       fullPath: '/requests/$id'
       preLoaderRoute: typeof RequestsIdRouteImport
-      parentRoute: typeof RequestsRoute
+      parentRoute: typeof rootRouteImport
     }
     '/purchases/$id': {
       id: '/purchases/$id'
@@ -404,20 +406,6 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
-interface RequestsRouteChildren {
-  RequestsIdRoute: typeof RequestsIdRoute
-  RequestsNewRoute: typeof RequestsNewRoute
-}
-
-const RequestsRouteChildren: RequestsRouteChildren = {
-  RequestsIdRoute: RequestsIdRoute,
-  RequestsNewRoute: RequestsNewRoute,
-}
-
-const RequestsRouteWithChildren = RequestsRoute._addFileChildren(
-  RequestsRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -425,12 +413,24 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BrowseRoute: BrowseRoute,
   CreatorRoute: CreatorRoute,
-  RequestsRoute: RequestsRouteWithChildren,
   CreatorProfileCreatorIdRoute: CreatorProfileCreatorIdRoute,
   ListingIdRoute: ListingIdRoute,
   PurchasesIdRoute: PurchasesIdRoute,
+  RequestsIdRoute: RequestsIdRoute,
+  RequestsNewRoute: RequestsNewRoute,
   PurchasesIndexRoute: PurchasesIndexRoute,
+  RequestsIndexRoute: RequestsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

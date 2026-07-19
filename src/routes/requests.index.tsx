@@ -4,7 +4,7 @@ import { getRequests } from "@/services/requestsService";
 import { RequestCard } from "@/components/RequestCard";
 import { Button } from "@/components/ui/button";
 
-export const Route = createFileRoute("/requests")({
+export const Route = createFileRoute("/requests/")({
   head: () => ({ meta: [{ title: "Custom recipe requests — Pickture" }] }),
   component: Requests,
 });

@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Flag, Lock, Check, CheckCircle2 } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 import { modelLabel as modelLabelSafe } from "@/lib/models";
+import { BrandLottie } from "@/components/BrandLottie";
+import purchaseSuccess from "@/assets/lottie/purchase-success";
 
 export const Route = createFileRoute("/listing/$id")({ component: ListingDetail });
 
@@ -136,7 +138,7 @@ function ListingDetail() {
         {justPurchasedId && (
           <div className="mt-4 border border-teal bg-teal/5 p-4">
             <div className="flex items-center gap-2 text-teal">
-              <CheckCircle2 className="h-5 w-5" />
+              <BrandLottie animationData={purchaseSuccess} loop={false} style={{ height: 40, width: 40 }} />
               <span className="font-display text-lg">Recipe unlocked</span>
             </div>
             <p className="text-sm text-ink mt-1">The complete recipe is now available in your library.</p>

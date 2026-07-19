@@ -4,6 +4,9 @@ import { getListings } from "@/services/listingsService";
 import { ListingCard } from "@/components/ListingCard";
 import { Button } from "@/components/ui/button";
 import { Play, ShieldCheck, MessagesSquare } from "lucide-react";
+import { WordRotate } from "@/components/ui/word-rotate";
+import { Marquee } from "@/components/ui/marquee";
+import { modelLabel } from "@/lib/models";
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -19,7 +22,12 @@ function Landing() {
           <div className="md:col-span-7">
             <span className="label-eyebrow">The verified visual-recipe marketplace</span>
             <h1 className="font-display text-5xl md:text-7xl leading-[1.02] mt-4 tracking-tight">
-              Search verified<br />visual recipes.
+              Search verified<br />
+              <WordRotate
+                words={["visual recipes.", "product shots.", "portraits.", "brand visuals.", "poster art."]}
+                duration={2800}
+                className="text-teal"
+              />
             </h1>
             <p className="mt-6 text-lg text-neutral-gray max-w-xl">
               Buy complete AI image-generation specifications that are tested, reproducible, and rated by real users.
@@ -72,6 +80,25 @@ function Landing() {
           </div>
         ))}
       </section>
+
+      {/* LIVE CATALOG MARQUEE — 21st.dev Marquee over real listings */}
+      {featured.length > 0 && (
+        <section className="border-t border-ink bg-card">
+          <Marquee pauseOnHover className="[--duration:35s] py-1">
+            {featured.map((l) => (
+              <Link
+                key={l.id}
+                to="/listing/$id"
+                params={{ id: l.id }}
+                className="flex items-center gap-2 text-sm whitespace-nowrap px-4 hover:text-teal"
+              >
+                <span className="font-medium">{l.title}</span>
+                <span className="label-eyebrow text-neutral-gray">{modelLabel(l.model)}</span>
+              </Link>
+            ))}
+          </Marquee>
+        </section>
+      )}
 
       {/* FEATURED */}
       <section className="border-t border-ink">

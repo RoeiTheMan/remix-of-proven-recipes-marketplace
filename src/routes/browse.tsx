@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getListings, type ListingFilters, type ListingSort } from "@/services/listingsService";
 import { ListingCard } from "@/components/ListingCard";
 import { FilterBar } from "@/components/FilterBar";
+import { BrandLottie } from "@/components/BrandLottie";
+import emptyFrame from "@/assets/lottie/empty-frame";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({ meta: [{ title: "Browse verified recipes — Pickture" }, { name: "description", content: "Filter by model, style, price, usage rights, and consistency score." }] }),
@@ -31,7 +33,7 @@ function BrowsePage() {
           <p className="text-neutral-gray">Loading recipes…</p>
         ) : items.length === 0 ? (
           <div className="border border-border p-16 text-center">
-            <div className="mx-auto h-16 w-16 border border-ink flex items-center justify-center label-eyebrow mb-4">Lottie</div>
+            <BrandLottie animationData={emptyFrame} loop className="mx-auto mb-2" style={{ height: 120, width: 120 }} />
             <h3 className="font-display text-2xl">No verified recipes match this search.</h3>
             <p className="text-sm text-neutral-gray mt-2">Try broadening the model, price, or usage filter.</p>
           </div>

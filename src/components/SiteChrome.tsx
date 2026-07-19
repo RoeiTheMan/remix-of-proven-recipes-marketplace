@@ -1,6 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Logo } from "./Logo";
 import { RoleSwitcher } from "./RoleSwitcher";
+import { NotificationBell } from "./NotificationBell";
 import { useAuth } from "@/context/AuthContext";
 
 const NAV = [
@@ -32,7 +33,10 @@ export function SiteHeader() {
           )}
           {isAdmin && <Link to="/admin" className={path.startsWith("/admin") ? "text-ink" : "text-neutral-gray hover:text-ink"}>Admin</Link>}
         </nav>
-        <RoleSwitcher />
+        <div className="flex items-center gap-1">
+          <NotificationBell />
+          <RoleSwitcher />
+        </div>
       </div>
     </header>
   );

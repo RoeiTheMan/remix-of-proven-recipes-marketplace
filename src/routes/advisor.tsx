@@ -5,7 +5,9 @@ import { MatchResultCard } from "@/components/MatchResultCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Mic, Sparkles } from "lucide-react";
+import { Mic } from "lucide-react";
+import { BrandLottie } from "@/components/BrandLottie";
+import aiThinking from "@/assets/lottie/ai-thinking";
 
 export const Route = createFileRoute("/advisor")({
   head: () => ({ meta: [{ title: "Advisor — Pickture" }, { name: "description", content: "Describe the visual you need; we match it to verified recipes." }] }),
@@ -52,9 +54,9 @@ function Advisor() {
 
       <div className="mt-10">
         {loading && (
-          <div className="border border-border bg-card p-10 text-center flex flex-col items-center gap-3">
-            <Sparkles className="h-6 w-6 text-teal animate-pulse" />
-            <span className="label-eyebrow">AI thinking animation placeholder</span>
+          <div className="border border-border bg-card p-10 text-center flex flex-col items-center gap-2">
+            <BrandLottie animationData={aiThinking} loop style={{ height: 48, width: 160 }} />
+            <span className="label-eyebrow">Matching verified recipes…</span>
           </div>
         )}
         {!loading && results && (

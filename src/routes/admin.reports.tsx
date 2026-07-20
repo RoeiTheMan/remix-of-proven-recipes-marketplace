@@ -19,6 +19,12 @@ function AdminReports() {
   const { data = [] } = useQuery({ queryKey: ["reports"], queryFn: getReports });
   const qc = useQueryClient();
 
+  // The queue only shows reports still needing a decision. Dismissing or
+  // actioning a report resolves it, so it drops out of the list.
+  const active = data.filter(
+    ({ report }) => report.status === "open" || report.status === "reviewing",
+  );
+
   async function resolve(id: string, status: ReportStatus) {
     await resolveReport(id, status);
     toast.success(`Report ${status}`);
@@ -43,7 +49,14 @@ function AdminReports() {
             <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
           </TableRow></TableHeader>
           <TableBody>
-            {data.map(({ report, listing, reporter }) => (
+            {active.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center text-neutral-gray py-10">
+                  No open reports. The queue is clear.
+                </TableCell>
+              </TableRow>
+            )}
+            {active.map(({ report, listing, reporter }) => (
               <TableRow key={report.id}>
                 <TableCell className="max-w-md">{report.reason}</TableCell>
                 <TableCell className="font-mono text-xs">{listing?.title ?? report.listingId}</TableCell>

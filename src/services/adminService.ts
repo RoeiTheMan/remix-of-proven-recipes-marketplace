@@ -76,15 +76,24 @@ export async function getDashboardStats() {
 }
 
 export async function getReports() {
+  // reports.reporter_id references auth.users, not profiles, so it can't be
+  // embedded via PostgREST FK. Fetch reporter profiles separately by id.
   const { data, error } = await supabase
     .from("reports")
-    .select("*, listings(*), profiles!reports_reporter_id_fkey(*)")
+    .select("*, listings(*)")
     .order("created_at", { ascending: false });
   if (error) throw error;
-  return (data ?? []).map((r: any) => ({
+  const rows = data ?? [];
+  const reporterIds = Array.from(new Set(rows.map((r: any) => r.reporter_id).filter(Boolean)));
+  const profiles: Record<string, any> = {};
+  if (reporterIds.length) {
+    const { data: profs } = await supabase.from("profiles").select("*").in("id", reporterIds);
+    for (const p of profs ?? []) profiles[p.id] = p;
+  }
+  return rows.map((r: any) => ({
     report: mapReportRow(r),
     listing: r.listings ? mapListingRow(r.listings) : null,
-    reporter: r.profiles ? mapProfileRow(r.profiles) : null,
+    reporter: profiles[r.reporter_id] ? mapProfileRow(profiles[r.reporter_id]) : null,
   }));
 }
 

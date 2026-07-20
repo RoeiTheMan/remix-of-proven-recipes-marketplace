@@ -73,7 +73,7 @@ export function ReportDialog({
           <button
             onClick={submit}
             disabled={busy}
-            className="inline-flex items-center justify-center rounded-md bg-ink text-warm-white px-4 py-2 text-sm font-medium hover:bg-ink/90 disabled:opacity-50"
+            className="inline-flex items-center justify-center rounded-md bg-ink text-warm px-4 py-2 text-sm font-medium hover:bg-ink/90 disabled:opacity-50"
           >
             {busy ? "Submitting…" : "Submit report"}
           </button>

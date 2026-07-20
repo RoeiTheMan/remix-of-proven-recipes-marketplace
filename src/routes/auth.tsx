@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { signIn, signUp } from "@/services/authService";
+import { signIn, signUp, resendConfirmation } from "@/services/authService";
 import { useAuth } from "@/context/AuthContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -60,6 +60,24 @@ function Auth() {
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
+
+  async function handleResend() {
+    if (!pendingEmail || resending) return;
+    setResending(true);
+    try {
+      await resendConfirmation(pendingEmail);
+      toast.success("Verification email sent again. Check your inbox.");
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "Couldn't resend the email.";
+      const msg = /rate|too many|seconds/i.test(raw)
+        ? "Please wait a moment before requesting another email."
+        : raw;
+      toast.error(msg);
+    } finally {
+      setResending(false);
+    }
+  }
 
   async function submit(kind: "in" | "up", e: React.FormEvent) {
     e.preventDefault();
@@ -105,7 +123,16 @@ function Auth() {
           Can't find it? Check your spam or promotions folder.
         </p>
         <Button
+          variant="signal"
           className="w-full mt-8"
+          onClick={handleResend}
+          disabled={resending}
+        >
+          {resending ? "Sending…" : "Resend verification email"}
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full mt-3"
           onClick={() => {
             setPendingEmail(null);
             setPassword("");

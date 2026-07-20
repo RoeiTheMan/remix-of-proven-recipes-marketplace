@@ -28,6 +28,20 @@ export async function signUp(email: string, password: string, displayName?: stri
   return { ok: true as const, session: data.session, user: data.user };
 }
 
+// Re-send the signup confirmation email (built-in Lovable Cloud / Supabase email).
+export async function resendConfirmation(email: string) {
+  const { error } = await supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo:
+        typeof window !== "undefined" ? `${window.location.origin}/auth` : undefined,
+    },
+  });
+  if (error) throw error;
+  return { ok: true as const };
+}
+
 export async function signOut() {
   await supabase.auth.signOut();
 }

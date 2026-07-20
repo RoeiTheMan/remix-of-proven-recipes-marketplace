@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getCreatorPublicProfile } from "@/services/creatorsService";
 import { ListingCard } from "@/components/ListingCard";
 import { User, ExternalLink, Shield } from "lucide-react";
+import { BackLink } from "@/components/BackLink";
 
 export const Route = createFileRoute("/creator-profile/$creatorId")({
   component: CreatorProfilePage,
@@ -37,6 +38,7 @@ function CreatorProfilePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-10">
+      <BackLink to="/browse" label="Back to Browse" className="mb-6" />
       <div className="grid md:grid-cols-3 gap-8 items-start">
         <aside className="md:col-span-1 border border-border bg-card p-6">
           <div className="flex items-center gap-4">

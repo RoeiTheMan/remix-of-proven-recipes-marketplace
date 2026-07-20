@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UsageRights } from "@/types";
 import { SUPPORTED_MODELS } from "@/lib/models";
+import { BackLink } from "@/components/BackLink";
 
 export const Route = createFileRoute("/requests/new")({ component: NewRequest });
 
@@ -44,6 +45,7 @@ function NewRequest() {
 
   return (
     <div className="max-w-2xl mx-auto px-6 py-10">
+      <BackLink to="/requests" label="Back to Requests" className="mb-6" />
       <span className="label-eyebrow">New request</span>
       <h1 className="font-display text-4xl mt-2">Post a brief</h1>
       <form onSubmit={submit} className="mt-8 space-y-5">

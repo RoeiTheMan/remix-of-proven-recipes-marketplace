@@ -14,6 +14,7 @@ import { ReviewStars } from "@/components/ReviewStars";
 import { Copy, Wand2, Star } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 import { modelDisplayName } from "@/lib/models";
+import { BackLink } from "@/components/BackLink";
 
 export const Route = createFileRoute("/purchases/$id")({ component: PurchaseDetail });
 
@@ -90,7 +91,9 @@ function PurchaseDetail() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 grid lg:grid-cols-3 gap-10">
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <BackLink to="/purchases" label="Back to Purchases" className="mb-6" />
+    <div className="grid lg:grid-cols-3 gap-10">
       <div className="lg:col-span-2 space-y-8">
         <div>
           <span className="label-eyebrow">Recipe</span>
@@ -209,6 +212,7 @@ function PurchaseDetail() {
           )}
         </div>
       </aside>
+    </div>
     </div>
   );
 }

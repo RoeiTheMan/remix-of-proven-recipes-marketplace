@@ -18,6 +18,7 @@ import { Flag, Lock, Check, CheckCircle2 } from "lucide-react";
 import { getDemoListingArtwork } from "@/lib/demoArtwork";
 import { modelDisplayName, modelLabel as modelLabelSafe } from "@/lib/models";
 import { BrandLottie } from "@/components/BrandLottie";
+import { BackLink } from "@/components/BackLink";
 import purchaseSuccess from "@/assets/lottie/purchase-success";
 
 export const Route = createFileRoute("/listing/$id")({ component: ListingDetail });
@@ -88,7 +89,9 @@ function ListingDetail() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 grid lg:grid-cols-12 gap-10">
+    <div className="max-w-7xl mx-auto px-6 py-10">
+      <BackLink to="/browse" label="Back to Browse" className="mb-6" />
+    <div className="grid lg:grid-cols-12 gap-10">
       <div className="lg:col-span-7">
         <div className="mx-auto max-w-[520px]">
           <ImagePlaceholder
@@ -230,6 +233,7 @@ function ListingDetail() {
 
       <PurchaseDialog listing={listing} open={open} onOpenChange={setOpen} onConfirm={handleBuy} busy={busy} />
       <ReportDialog listingId={listing.id} open={reportOpen} onOpenChange={setReportOpen} />
+    </div>
     </div>
   );
 }

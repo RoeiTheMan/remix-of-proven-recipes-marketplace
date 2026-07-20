@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { BackLink } from "@/components/BackLink";
 
 export const Route = createFileRoute("/requests/$id")({ component: RequestDetail });
 
@@ -75,7 +76,9 @@ function RequestDetail() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 grid lg:grid-cols-3 gap-8">
+    <div className="max-w-6xl mx-auto px-6 py-10">
+      <BackLink to="/requests" label="Back to Requests" className="mb-6" />
+    <div className="grid lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
         <div>
           <span className="label-eyebrow">Request · {request.status}</span>
@@ -126,6 +129,7 @@ function RequestDetail() {
       <aside>
         <ChatPanel messages={messages} currentUserId={user?.id ?? ""} onSend={handleSend} disabled={!canChat} />
       </aside>
+    </div>
     </div>
   );
 }

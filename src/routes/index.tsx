@@ -4,9 +4,71 @@ import { getListings } from "@/services/listingsService";
 import { ListingCard } from "@/components/ListingCard";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, MessagesSquare } from "lucide-react";
-import { WordRotate } from "@/components/ui/word-rotate";
+import { TextMorph } from "@/components/ui/text-morph";
 import { Marquee } from "@/components/ui/marquee";
+import { TestimonialsColumn, type Testimonial } from "@/components/ui/testimonials-columns-1";
 import { modelLabel } from "@/lib/models";
+
+const testimonials: Testimonial[] = [
+  {
+    text: "I stopped burning hours re-rolling prompts. I bought a product-shot recipe, followed it exactly, and got the same clean result on the first try.",
+    image: "https://randomuser.me/api/portraits/women/44.jpg",
+    name: "Maya Rosen",
+    role: "Brand Designer",
+  },
+  {
+    text: "Selling my tested Midjourney recipes turned my process into real income. Buyers trust the consistency score, so they actually convert.",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
+    name: "Daniel Okafor",
+    role: "AI Artist & Creator",
+  },
+  {
+    text: "The verified reviews are the difference. I can see a recipe actually reproduces before I pay for it — no more guessing.",
+    image: "https://randomuser.me/api/portraits/women/68.jpg",
+    name: "Sofia Marchetti",
+    role: "Content Creator",
+  },
+  {
+    text: "We needed a specific brand look. I posted a custom request, got three offers, and had a delivered recipe the same week.",
+    image: "https://randomuser.me/api/portraits/men/75.jpg",
+    name: "Tom Bergman",
+    role: "Marketing Lead",
+  },
+  {
+    text: "As a creator, the protected-recipe unlock means my prompts stay mine until someone buys. That trust is why I list here.",
+    image: "https://randomuser.me/api/portraits/women/65.jpg",
+    name: "Amara Singh",
+    role: "Freelance Illustrator",
+  },
+  {
+    text: "Pickture cut our creative turnaround in half. Consistent product imagery across the whole store, no in-house prompt expert needed.",
+    image: "https://randomuser.me/api/portraits/men/54.jpg",
+    name: "Lucas Fields",
+    role: "E-commerce Founder",
+  },
+  {
+    text: "The consistency score is genuinely useful — I filter for high scores and the results hold up across seeds and aspect ratios.",
+    image: "https://randomuser.me/api/portraits/women/90.jpg",
+    name: "Nina Kovač",
+    role: "Art Director",
+  },
+  {
+    text: "I made back my first month just selling three recipe packs. The sale notifications and dashboard make it feel like a real storefront.",
+    image: "https://randomuser.me/api/portraits/men/11.jpg",
+    name: "Ryan Mitchell",
+    role: "Prompt Engineer",
+  },
+  {
+    text: "Onboarding was instant. I searched, found a portrait recipe, unlocked it, and generated something client-ready in minutes.",
+    image: "https://randomuser.me/api/portraits/women/33.jpg",
+    name: "Elena Torres",
+    role: "Studio Photographer",
+  },
+];
+
+const firstColumn = testimonials.slice(0, 3);
+const secondColumn = testimonials.slice(3, 6);
+const thirdColumn = testimonials.slice(6, 9);
 
 export const Route = createFileRoute("/")({ component: Landing });
 
@@ -23,9 +85,9 @@ function Landing() {
             <span className="label-eyebrow">The verified visual-recipe marketplace</span>
             <h1 className="font-display text-5xl md:text-7xl leading-[1.02] mt-4 tracking-tight">
               Search verified<br />
-              <WordRotate
+              <TextMorph
                 words={["visual recipes.", "product shots.", "portraits.", "brand visuals.", "poster art."]}
-                duration={2800}
+                interval={2800}
                 className="text-teal"
               />
             </h1>
@@ -35,9 +97,12 @@ function Landing() {
             <p className="mt-3 text-sm text-teal uppercase tracking-widest">Proven visuals, verified every time.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="bg-ink text-warm hover:bg-ink/90">
-                <Link to="/advisor">Find My Best Recipe</Link>
+                <Link to="/browse">Enter the Marketplace</Link>
               </Button>
               <Button asChild size="lg" variant="signal">
+                <Link to="/advisor">Find My Best Recipe</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
                 <Link to="/creator">Start Selling</Link>
               </Button>
             </div>
@@ -135,6 +200,24 @@ function Landing() {
               Need something specific? Post a brief, receive offers from creators, compare and accept one, chat, review the delivery, and leave a rating. All within Pickture.
             </p>
             <Link to="/requests" className="text-sm text-ink underline underline-offset-4 mt-6 inline-block">Explore requests →</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS — 21st.dev Testimonials Columns over marketplace users */}
+      <section className="border-t border-ink">
+        <div className="max-w-7xl mx-auto px-6 py-16">
+          <div className="text-center max-w-xl mx-auto">
+            <span className="label-eyebrow">Testimonials</span>
+            <h2 className="font-display text-3xl md:text-4xl mt-2">Trusted by buyers and creators</h2>
+            <p className="text-neutral-gray mt-3">
+              Real results from the people who search, sell, and generate with Pickture.
+            </p>
+          </div>
+          <div className="flex justify-center gap-6 mt-12 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] max-h-[600px] overflow-hidden">
+            <TestimonialsColumn testimonials={firstColumn} duration={15} />
+            <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={19} />
+            <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={17} />
           </div>
         </div>
       </section>

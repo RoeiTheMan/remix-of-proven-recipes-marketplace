@@ -15,7 +15,7 @@ export function FilterBar({
   onSort: (s: ListingSort) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 border border-border bg-card">
+    <div className="grid grid-cols-1 md:grid-cols-6 gap-3 p-4 border border-border bg-card rounded-xl">
       <Input placeholder="Search recipes…" value={filters.q ?? ""} onChange={(e) => onChange({ ...filters, q: e.target.value })} className="md:col-span-2" />
       <Select value={filters.model ?? "all"} onValueChange={(v) => onChange({ ...filters, model: v === "all" ? undefined : v })}>
         <SelectTrigger><SelectValue placeholder="Model" /></SelectTrigger>

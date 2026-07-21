@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getListings, type ListingFilters, type ListingSort } from "@/services/listingsService";
 import { ListingCard } from "@/components/ListingCard";
 import { FilterBar } from "@/components/FilterBar";
+import { GlowingSearchBorder } from "@/components/ui/animated-glowing-search-bar";
 import { BrandLottie } from "@/components/BrandLottie";
 import emptyFrame from "@/assets/lottie/empty-frame";
 
@@ -27,7 +28,9 @@ function BrowsePage() {
         <span className="label-eyebrow">Marketplace</span>
         <h1 className="font-display text-4xl md:text-5xl mt-2">All verified recipes</h1>
       </div>
-      <FilterBar filters={filters} sort={sort} onChange={setFilters} onSort={setSort} />
+      <GlowingSearchBorder>
+        <FilterBar filters={filters} sort={sort} onChange={setFilters} onSort={setSort} />
+      </GlowingSearchBorder>
       <div className="mt-8">
         {isLoading ? (
           <p className="text-neutral-gray">Loading recipes…</p>

@@ -12,6 +12,17 @@ const DEMO_DIR = "/demo-listings";
 // Ordered rules: first matching keyword wins. Keep the specific ones first
 // so e.g. "Skincare Flatlay" hits `social` before `cosmetic`.
 const RULES: Array<{ match: RegExp; file: string }> = [
+  // Real Midjourney V7 photo listings (Roei's uploads). Specific title keys
+  // sit first so they win over the generic keyword rules below.
+  { match: /sculptural athleisure|white-on-white/i, file: "mj-athleisure-white.png" },
+  { match: /cream umbrella|mediterranean coast/i, file: "mj-coastal-umbrella.png" },
+  { match: /cave villa/i, file: "mj-cave-villa.png" },
+  { match: /linen menswear/i, file: "mj-linen-menswear.png" },
+  { match: /obsidian jar/i, file: "mj-obsidian-jar.png" },
+  { match: /monochrome mansion/i, file: "mj-monochrome-mansion.png" },
+  { match: /editorial eyewear/i, file: "mj-editorial-eyewear.png" },
+  { match: /dragon orange tree/i, file: "mj-dragon-orange-tree.png" },
+  { match: /rockies cat selfie|cat selfie/i, file: "mj-cat-rockies-selfie.png" },
   { match: /amber\s*&\s*moss|botanical fragrance/i, file: "chatgpt-amber-fragrance.png" },
   { match: /sunlit patisserie|caf[eé] launch/i, file: "chatgpt-sunlit-patisserie.png" },
   { match: /moonlit fox|children.?s storybook/i, file: "chatgpt-moonlit-fox.png" },

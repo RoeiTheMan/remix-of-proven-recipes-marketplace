@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getListings } from "@/services/listingsService";
 import { ListingCard } from "@/components/ListingCard";
 import { Button } from "@/components/ui/button";
-import { Play, ShieldCheck, MessagesSquare } from "lucide-react";
+import { ShieldCheck, MessagesSquare } from "lucide-react";
 import { WordRotate } from "@/components/ui/word-rotate";
 import { Marquee } from "@/components/ui/marquee";
 import { modelLabel } from "@/lib/models";
@@ -43,14 +43,16 @@ function Landing() {
             </div>
           </div>
           <div className="md:col-span-5">
-            <div className="aspect-video border border-ink bg-secondary flex items-center justify-center relative">
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                <div className="h-14 w-14 rounded-full border border-ink flex items-center justify-center">
-                  <Play className="h-6 w-6 text-ink" />
-                </div>
-                <span className="label-eyebrow">HeyGen Explainer Video — coming later</span>
-              </div>
-            </div>
+            <video
+              className="aspect-video w-full border border-ink bg-secondary object-cover"
+              src="/media/pickture-explainer.mp4"
+              poster="/media/pickture-explainer-poster.jpg"
+              controls
+              playsInline
+              preload="metadata"
+              aria-label="Pickture explainer video"
+            />
+            <span className="label-eyebrow mt-2 block text-neutral-gray">Watch the 40-second explainer</span>
           </div>
         </div>
       </section>

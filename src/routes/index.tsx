@@ -117,7 +117,7 @@ function Landing() {
               preload="metadata"
               aria-label="Pickture explainer video"
             />
-            <span className="label-eyebrow mt-2 block text-neutral-gray">Watch the 40-second explainer</span>
+            <span className="label-eyebrow mt-2 block text-neutral-gray">Watch the explainer</span>
           </div>
         </div>
       </section>

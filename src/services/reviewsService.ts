@@ -49,7 +49,9 @@ export async function createReview(purchaseId: string, rating: number, comment: 
 export async function getReviews(listingId: string): Promise<Review[]> {
   const { data, error } = await supabase
     .from("reviews")
-    .select("*")
+    // Anonymous visitors may only read public review columns; purchase linkage
+    // identifiers are not exposed on the public marketplace.
+    .select("id,listing_id,buyer_id,rating,comment,created_at")
     .eq("listing_id", listingId)
     .order("created_at", { ascending: false });
   if (error) throw error;

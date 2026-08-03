@@ -49,8 +49,12 @@ export function modelDisplayName(
   version?: string | null,
 ): string {
   const label = modelLabel(value);
-  if (label === "Nano Banana") return label;
-  return [label, version].filter(Boolean).join(" ");
+  const v = version?.trim();
+  // Skip empty / "latest", and don't repeat a version the label already
+  // carries (e.g. "Midjourney V7" + "v7", "ChatGPT Images 2" + "2").
+  if (!v || v.toLowerCase() === "latest") return label;
+  if (label.toLowerCase().includes(v.toLowerCase())) return label;
+  return `${label} ${v}`;
 }
 
 // Model-specific settings fields for the creator form. Only fields relevant

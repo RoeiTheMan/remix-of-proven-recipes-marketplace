@@ -7,12 +7,9 @@ import { createReview } from "@/services/reviewsService";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { ImagePlaceholder } from "@/components/ImagePlaceholder";
 import { CreatorInline } from "@/components/CreatorInline";
 import { ReviewStars } from "@/components/ReviewStars";
-import { Copy, Wand2, Star } from "lucide-react";
-import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { Copy, Star } from "lucide-react";
 import { modelDisplayName } from "@/lib/models";
 import { BackLink } from "@/components/BackLink";
 
@@ -153,30 +150,6 @@ function PurchaseDetail() {
           </section>
         )}
 
-        <section>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <span className="label-eyebrow">Advertised example</span>
-              <ImagePlaceholder id={getDemoListingArtwork(listing)} ratio="aspect-square" />
-            </div>
-            <div>
-              <span className="label-eyebrow">Your generated result</span>
-              <div className="aspect-square border border-dashed border-border flex items-center justify-center text-neutral-gray text-sm">
-                Not generated yet
-              </div>
-            </div>
-          </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span className="inline-block mt-4">
-                  <Button disabled variant="signal"><Wand2 /> Generate Test Image</Button>
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>Image generation connects in a later milestone.</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </section>
       </div>
 
       <aside className="space-y-4">

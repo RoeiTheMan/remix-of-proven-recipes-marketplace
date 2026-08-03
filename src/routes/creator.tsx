@@ -30,7 +30,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Star, ArrowUp, ArrowDown, Trash2, Image as ImageIcon, Eye, Pencil } from "lucide-react";
 import type { Listing, UsageRights } from "@/types";
 import { SUPPORTED_MODELS, modelDisplayName, modelLabel, settingsFieldsFor } from "@/lib/models";
-import { getDemoListingArtwork } from "@/lib/demoArtwork";
+import { getDemoListingArtwork, getGenericFallbackUrl } from "@/lib/demoArtwork";
 
 export const Route = createFileRoute("/creator")({ component: Creator });
 
@@ -255,8 +255,8 @@ function ListingRow({ listing, onChanged }: { listing: Listing; onChanged: () =>
           <Button size="sm" variant="ghost" title="Manage images" onClick={() => setImgOpen(true)}>
             <ImageIcon className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" title="Edit" onClick={() => setEditOpen(true)} disabled={isRemoved}>
-            <Pencil className="h-4 w-4" />
+          <Button size="sm" variant="outline" title="Edit listing details" onClick={() => setEditOpen(true)} disabled={isRemoved}>
+            <Pencil className="h-4 w-4 mr-1" /> Edit
           </Button>
           <Button size="sm" variant="outline" onClick={toggle} disabled={busy || isRemoved}>
             {listing.status === "published" ? "Unpublish" : "Publish"}
@@ -291,6 +291,13 @@ function ListingEditorDialog({
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [pendingCoverIndex, setPendingCoverIndex] = useState<number | null>(null);
   const [imagesLoading, setImagesLoading] = useState(false);
+
+  // An existing listing already shows a cover in the catalogue (an uploaded
+  // image or the shared demo-art resolver). Treat that as the remembered
+  // preview so editing never forces a re-upload — only a listing with no
+  // preview at all (the generic fallback) still needs an image to publish.
+  const hasEffectiveCover =
+    !!editing && getDemoListingArtwork(editing) !== getGenericFallbackUrl();
 
   // Load existing values when editing.
   useEffect(() => {
@@ -375,7 +382,7 @@ function ListingEditorDialog({
       toast.error("Title and full prompt are required.");
       return;
     }
-    if (status === "published" && existingImages.length + pendingImages.length === 0) {
+    if (status === "published" && existingImages.length + pendingImages.length === 0 && !hasEffectiveCover) {
       toast.error("Add at least one preview image before publishing.");
       setStep(3);
       return;
@@ -527,6 +534,18 @@ function ListingEditorDialog({
               </label>
               {imagesLoading ? (
                 <p className="text-xs text-neutral-gray">Loading existing images…</p>
+              ) : existingImages.length + pendingImages.length === 0 && hasEffectiveCover && editing ? (
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="border border-border p-2 space-y-2">
+                      <div className="aspect-[4/5] overflow-hidden bg-secondary">
+                        <img src={getDemoListingArtwork(editing)} alt="Current listing preview" className="h-full w-full object-cover" />
+                      </div>
+                      <p className="text-center text-xs text-neutral-gray">Current preview</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-neutral-gray">This listing already has a preview image. Upload a new one only if you want to replace it.</p>
+                </div>
               ) : existingImages.length + pendingImages.length === 0 ? (
                 <p className="text-xs text-neutral-gray">An image is required to publish. You can still save an image-less draft.</p>
               ) : (
